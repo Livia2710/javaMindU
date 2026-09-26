@@ -1,13 +1,13 @@
-package com.example.MindU;
+package com.example.mindu;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MindUApplication {
+public class MinduApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MindUApplication.class, args);
+		SpringApplication.run(MinduApplication.class, args);
 	}
 
 }
