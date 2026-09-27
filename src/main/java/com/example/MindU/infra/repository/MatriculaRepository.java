@@ -1,7 +1,7 @@
 package com.example.mindu.infra.repository;
 
 import com.example.mindu.domain.entity.Matricula;
-import org.hibernate.internal.util.Optional;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MatriculaRepository extends JpaRepository<Matricula, String> {
