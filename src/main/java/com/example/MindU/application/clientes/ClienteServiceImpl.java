@@ -24,7 +24,6 @@ public class ClienteServiceImpl implements ClienteService {
     private final EmpresaRepository empresaRepository;
     private final MatriculaRepository matriculaRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CriptografiaService criptografiaService; // ver módulo 15 — dependência precisa existir já
 
     @Override
     @Transactional
@@ -82,7 +81,7 @@ public class ClienteServiceImpl implements ClienteService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cliente ainda não foi aprovado pela empresa");
         }
 
-        cliente.setCnsCriptografado(criptografiaService.criptografar(dto.getCns())); // RNF02
+        cliente.setCns(dto.getCns()); // RNF02
         cliente.setDataNascimento(dto.getDataNascimento());
         cliente.setNomeMae(dto.getNomeMae());
         cliente.setGenero(dto.getGenero());

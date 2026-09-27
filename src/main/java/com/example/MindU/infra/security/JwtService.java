@@ -3,6 +3,7 @@ package com.example.mindu.infra.security;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -12,17 +13,16 @@ import java.util.Date;
 @Component
 public class JwtService {
 
-    // Chave usada pra ASSINAR o token — não criptografa o conteúdo, garante que
-    // ninguém alterou o token sem você perceber (é uma "assinatura", não um "cadeado").
-    private static final String SECRET = "coloque-uma-chave-bem-grande-e-secreta-aqui-depois-mova-para-o-yml";
+    @Value("${mindu.jwt.secret}")
+    private String secret;
 
-    // RN08: token expira em 60 minutos (60 * 60 * 1000 ms = 1h)
-    private static final long EXPIRACAO_MS = 60 * 60 * 1000;
+    @Value("${mindu.jwt.expiracao-ms}")
+    private long expiracaoMs;
 
     // Converte a String SECRET numa SecretKey no formato que a lib jjwt exige
     // pra assinar/verificar com o algoritmo HMAC-SHA.
     private SecretKey getKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     // Monta o token: quem é o dono (subject = email), quando foi emitido,
@@ -31,7 +31,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRACAO_MS))
+                .expiration(new Date(System.currentTimeMillis() + expiracaoMs))
                 .signWith(getKey())
                 .compact(); // "compact" = serializa tudo numa única String (o token final)
     }

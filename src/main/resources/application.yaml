@@ -16,3 +16,10 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+
+mindu:
+  jwt:
+    secret: "coloque-uma-chave-bem-grande-e-secreta-aqui-pelo-menos-32-caracteres"
+    expiracao-ms: 3600000 # 60 minutos
+  criptografia:
+    chave: "0123456789abcdef" # precisa ter exatamente 16, 24 ou 32 caracteres

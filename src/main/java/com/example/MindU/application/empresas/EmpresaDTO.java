@@ -1,5 +1,10 @@
 package com.example.mindu.application.empresas;
 
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class EmpresaDTO {
     private String id;
     private String razaoSocial;

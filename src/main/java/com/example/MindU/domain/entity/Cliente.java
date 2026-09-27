@@ -2,6 +2,7 @@ package com.example.mindu.domain.entity;
 
 import com.example.mindu.domain.enums.Genero;
 import com.example.mindu.domain.enums.StatusCadastroCliente;
+import com.example.mindu.infra.security.CnsConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,7 +27,9 @@ public class Cliente extends Usuario{
     @JoinColumn(name = "matricula_id", unique = true)
     private Matricula matricula;
 
-    private String cnsCriptografado;
+    @Convert(converter = CnsConverter.class)
+    @Column(name = "cns")
+    private String cns;
 
     private LocalDate dataNascimento;
 
