@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ClienteServiceImpl implements ClienteService {
@@ -93,5 +95,14 @@ public class ClienteServiceImpl implements ClienteService {
     public Cliente buscarPorId(String id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+    }
+
+    // Filtra em memória — lista de Clientes por Empresa nunca deveria ser grande
+    // o suficiente pra precisar de Specification (diferente do Profissional/RF13)
+    @Override
+    public List<Cliente> listarPorEmpresa(String empresaId, StatusCadastroCliente status) {
+        List<Cliente> clientes = clienteRepository.findByEmpresaId(empresaId);
+        if (status == null) return clientes;
+        return clientes.stream().filter(c -> c.getStatus() == status).toList();
     }
 }

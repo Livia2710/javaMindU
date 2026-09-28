@@ -2,10 +2,7 @@ package com.example.mindu.domain.entity;
 
 import com.example.mindu.domain.enums.Modalidade;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table
@@ -21,7 +18,9 @@ public class LocalAtendimento {
 
     @ManyToOne
     @JoinColumn(name = "profissional_id", nullable = false)
-    private Profissional profissional;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Profissional profissional;;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

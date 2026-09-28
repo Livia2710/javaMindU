@@ -26,7 +26,7 @@ public class ProfissionalController {
     // foto/fotoBanner saem completamente daqui). Rota pública (permitAll).
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfissionalDTO> cadastrar(
-            @RequestPart("dados") @Valid ProfissionalCadastroDTO dto,
+            @ModelAttribute @Valid ProfissionalCadastroDTO dto,
             @RequestPart("fotoCarteirinha") MultipartFile fotoCarteirinha
     ) throws IOException {
         Profissional profissional = mapper.toEntity(dto, fotoCarteirinha);

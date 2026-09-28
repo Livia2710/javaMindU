@@ -9,6 +9,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,11 +31,10 @@ public class SecurityConfig {
                 // autentica sozinha via token (é o JwtFilter que faz isso acima).
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
-                        // Rotas que um visitante SEM token pode acessar: login e os
-                        // 3 cadastros públicos (Cliente, Empresa, Profissional).
-                        .requestMatchers("/v1/auth/**", "/v1/clientes", "/v1/empresas", "/v1/profissionais").permitAll()
-                        // Qualquer outra rota exige estar autenticado (token válido).
+                        .requestMatchers("/v1/auth/**", "/error").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/clientes", "/v1/empresas", "/v1/profissionais").permitAll()
                         .anyRequest().authenticated()
                 )
 

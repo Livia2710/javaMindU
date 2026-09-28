@@ -36,6 +36,7 @@ public class Agendamento {
     private StatusAgendamento status;
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime criadoEm = LocalDateTime.now();
 
 }

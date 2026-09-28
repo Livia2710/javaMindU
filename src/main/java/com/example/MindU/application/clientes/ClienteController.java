@@ -1,12 +1,15 @@
 package com.example.mindu.application.clientes;
 
 import com.example.mindu.domain.entity.Cliente;
+import com.example.mindu.domain.enums.StatusCadastroCliente;
 import com.example.mindu.domain.service.ClienteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/clientes")
@@ -36,4 +39,16 @@ public class ClienteController {
                                                         @RequestBody @Valid DadosSensiveisDTO dto) {
         return ResponseEntity.ok(mapper.toDTO(service.completarCadastro(id, dto)));
     }
+
+    // Existe porque a Empresa precisa SABER quem está pendente antes de poder
+    // aprovar (RF03) — sem isso, o PATCH /{id}/aprovacao não tem como ser
+    // chamado, já que ninguém sabe o id do Cliente de antemão.
+    @GetMapping
+    public ResponseEntity<List<ClienteDTO>> listar(
+            @RequestParam String empresaId,
+            @RequestParam(required = false) StatusCadastroCliente status) {
+        return ResponseEntity.ok(mapper.toDTOList(service.listarPorEmpresa(empresaId, status)));
+    }
+
+
 }

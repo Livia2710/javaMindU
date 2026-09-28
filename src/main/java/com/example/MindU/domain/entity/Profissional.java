@@ -36,14 +36,13 @@ public class Profissional extends Usuario{
 
     private String cep;
 
-    @Lob
+    @Column(columnDefinition = "bytea")
     private byte[] foto;
 
-    @Lob
+    @Column(columnDefinition = "bytea")
     private byte[] fotoBanner;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "bytea")
     private byte[] fotoCarterinha;
 
     @Enumerated(EnumType.STRING)

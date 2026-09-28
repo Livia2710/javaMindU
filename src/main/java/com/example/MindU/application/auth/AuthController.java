@@ -39,8 +39,12 @@ public class AuthController {
         Usuario usuario = buscarPorEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas"));
 
-        if (usuario.getBloqueadoAte() != null && usuario.getBloqueadoAte().isAfter(LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.LOCKED, "Conta bloqueada. Tente novamente mais tarde.");
+        if (usuario.getBloqueadoAte() != null) {
+            if (usuario.getBloqueadoAte().isAfter(LocalDateTime.now())) {
+                throw new ResponseStatusException(HttpStatus.LOCKED, "Conta bloqueada. Tente novamente mais tarde.");
+            }
+            usuario.setBloqueadoAte(null);
+            usuario.setTentativasLogin(0); // bloqueio expirou: recomeça a contagem
         }
 
         if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {

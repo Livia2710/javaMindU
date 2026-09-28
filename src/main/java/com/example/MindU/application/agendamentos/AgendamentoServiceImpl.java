@@ -46,7 +46,7 @@ public class AgendamentoServiceImpl implements AgendamentoService {
         boolean dentroDaDisponibilidade = profissional.getDisponibilidades().stream()
                 .anyMatch(d -> d.getDiaSemana() == diaSemanaDe(dataHora)
                         && !dataHora.toLocalTime().isBefore(d.getHoraInicio())
-                        && !dataHora.toLocalTime().isAfter(d.getHoraFim()));
+                        &&  dataHora.toLocalTime().isBefore(d.getHoraFim()));
 
         if (!dentroDaDisponibilidade) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

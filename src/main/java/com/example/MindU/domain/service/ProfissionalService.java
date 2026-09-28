@@ -22,4 +22,6 @@ public interface ProfissionalService {
     Profissional atualizarPerfil(String id, byte[] foto, byte[] fotoBanner); // editável depois do cadastro
 
     List<Profissional> pesquisar(String nome, String especialidade, Modalidade modalidade); // RF13
+
+    List<Profissional> listarPendentes();
 }

@@ -1,10 +1,7 @@
 package com.example.mindu.domain.entity;
 import com.example.mindu.domain.enums.DiaSemana;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalTime;
 
@@ -21,6 +18,8 @@ public class Disponibilidade {
 
     @ManyToOne
     @JoinColumn(name = "profissional_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Profissional profissional;
 
     @Enumerated(EnumType.STRING)

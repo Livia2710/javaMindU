@@ -1,10 +1,7 @@
 package com.example.mindu.application.profissionais;
 
 import com.example.mindu.domain.enums.TipoProfissional;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.util.List;
@@ -20,6 +17,7 @@ public class ProfissionalCadastroDTO {
     @Email
     private String email;
     @NotBlank
+    @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
     private String senha;
     @NotNull
     private TipoProfissional tipo;

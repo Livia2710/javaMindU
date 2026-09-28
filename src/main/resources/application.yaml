@@ -20,6 +20,8 @@ spring:
 mindu:
   jwt:
     secret: "coloque-uma-chave-bem-grande-e-secreta-aqui-pelo-menos-32-caracteres"
-    expiracao-ms: 3600000 # 60 minutos
+    expiracao-ms: 3600000
   criptografia:
-    chave: "0123456789abcdef" # precisa ter exatamente 16, 24 ou 32 caracteres
+    chave: "mindu-chave-16ch" # precisa ter exatamente 16, 24 ou 32 caracteres
+  admin:
+    senha-padrao: ${MINDU_ADMIN_SENHA:}

@@ -1,6 +1,7 @@
 package com.example.mindu.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -31,11 +32,13 @@ public abstract class Usuario {
     private String telefone;
 
     @Column(nullable = false)
+    @Builder.Default
     private int tentativasLogin = 0;
 
     private LocalDateTime bloqueadoAte;
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime criadoEm = LocalDateTime.now();
 
 }

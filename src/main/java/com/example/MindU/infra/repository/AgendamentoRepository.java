@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, String> {
     // RN10 — busca os agendamentos do Profissional naquele dia, pra checar conflito de horário
-    List<Agendamento> findByProfissionalIdAndDataHoraBetween(
-            String profissionalId, LocalDateTime inicio, LocalDateTime fim);
+    List<Agendamento> findByProfissionalIdAndDataHoraBetween(String profissionalId, LocalDateTime inicio, LocalDateTime fim);
+
+    List<Agendamento> findByClienteId(String clienteId);
 
 }

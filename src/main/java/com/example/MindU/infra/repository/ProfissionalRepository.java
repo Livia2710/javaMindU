@@ -2,6 +2,7 @@ package com.example.mindu.infra.repository;
 
 import com.example.mindu.domain.entity.Profissional;
 import com.example.mindu.domain.enums.Modalidade;
+import com.example.mindu.domain.enums.StatusVerificacao;
 import com.example.mindu.infra.repository.specs.ProfissionalSpecs;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +18,8 @@ public interface ProfissionalRepository extends JpaRepository<Profissional, Stri
     Optional<Profissional> findByEmail(String email); // login
 
     boolean existsByEmail(String email); // RF07 — 409 amigável em vez de erro cru de constraint
+
+    List<Profissional> findByStatus(StatusVerificacao status);
 
     // RF13 — monta o WHERE dinamicamente: cada filtro só entra se veio preenchido,
     // e a RN06 (só aprovados aparecem) entra sempre, sem condicional.

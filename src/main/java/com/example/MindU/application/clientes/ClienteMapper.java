@@ -3,6 +3,8 @@ package com.example.mindu.application.clientes;
 import com.example.mindu.domain.entity.Cliente;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class ClienteMapper {
 
@@ -25,5 +27,9 @@ public class ClienteMapper {
                 .empresaId(cliente.getEmpresa() != null ? cliente.getEmpresa().getId() : null)
                 .status(cliente.getStatus())
                 .build();
+    }
+
+    public List<ClienteDTO> toDTOList(List<Cliente> clientes) {
+        return clientes.stream().map(this::toDTO).toList();
     }
 }

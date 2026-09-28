@@ -115,4 +115,8 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     public List<Profissional> pesquisar(String nome, String especialidade, Modalidade modalidade) {
         return repository.search(nome, especialidade, modalidade); // RF13, RN06
     }
+
+    public List<Profissional> listarPendentes() {
+        return repository.findByStatus(StatusVerificacao.PENDENTE);
+    }
 }
