@@ -25,3 +25,5 @@ mindu:
     chave: "mindu-chave-16ch" # precisa ter exatamente 16, 24 ou 32 caracteres
   admin:
     senha-padrao: ${MINDU_ADMIN_SENHA:}
+  cors:
+    origens: ${CORS_ORIGENS:http://localhost:5173,http://localhost:3000}

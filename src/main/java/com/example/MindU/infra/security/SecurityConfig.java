@@ -12,6 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.config.Customizer;
+import org.springframework.web.cors.*;
+import org.springframework.beans.factory.annotation.Value ;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -50,5 +54,16 @@ public class SecurityConfig {
         // RNF01 — nunca salvar senha em texto puro. BCrypt gera um hash com
         // "salt" embutido automaticamente (duas senhas iguais geram hashes diferentes).
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(@Value("${mindu.cors.origens}") List<String> origens) {
+        CorsConfiguration c = new CorsConfiguration();
+        c.setAllowedOrigins(origens);
+        c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        c.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", c);
+        return src;
     }
 }
