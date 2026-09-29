@@ -19,11 +19,11 @@ spring:
 
 mindu:
   jwt:
-    secret: "${MINDU_JWT_SECRET:coloque-uma-chave-bem-grande-e-secreta-aqui-pelo-menos-32-caracteres}"
+    secret: "${MINDU_JWT_SECRET:coloque-uma-chave-bem-grande-e-secreta-aqui-pelo-menos-24-caracteres}"
     expiracao-ms: 3600000
   criptografia:
-    chave: "${MINDU_CRIPTOGRAFIA_CHAVE:mindu-chave-16ch}" # precisa ter exatamente 16, 24 ou 32 caracteres
+    chave: "${MINDU_CRIPTOGRAFIA_CHAVE:mindu-chave-16ch}"
   admin:
     senha-padrao: ${MINDU_ADMIN_SENHA:}
   cors:
-    origens: ${CORS_ORIGENS:http://localhost:5173,http://localhost:3000}
+    origens: ${CORS_ORIGENS:http://localhost:5173,http://localhost:3000,https://mind-u-pi.vercel.app}
