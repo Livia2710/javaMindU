@@ -26,6 +26,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(Customizer.withDefaults())
                 // CSRF protege formulários HTML com sessão de navegador. Sua API é
                 // stateless (sem sessão) e usa token, então esse ataque não se aplica
                 // do mesmo jeito — desligar é padrão em API REST pura.
