@@ -2,7 +2,7 @@
 
 Este é o repositório da API do **MindU** (plataforma de saúde mental corporativa), desenvolvida em **Java** com **Spring Boot**. Ela fornece os serviços e endpoints necessários para abastecer as aplicações front-end (React) e mobile (Android).
 
-🌐 **[Abrir a Documentação Completa (GitHub Pages)](https://livia2710.github.io/docsMindU/)**
+🌐 **[Abrir a Documentação Completa](https://docsmindu.vercel.app/)**
 
 ---
 
