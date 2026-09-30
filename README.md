@@ -2,7 +2,7 @@
 
 Central de integração do backend do **MindU** (plataforma de saúde mental corporativa) para as equipes de front-end (React) e mobile (Android).
 
-🌐 **[Abrir a Documentação Completa (GitHub Pages)](https://github.io)**
+🌐 **[Abrir a Documentação Completa (GitHub Pages)](https://livia2710.github.io/docsMindU/)**
 
 A página centraliza todas as rotas com seus respectivos métodos, regras de autenticação, exemplos reais de requisição/resposta e trechos de código prontos (com abas dedicadas para React/Vite e Android/Java). Um seletor global no topo da página permite alternar instantaneamente entre os ambientes local e de produção.
 
@@ -26,7 +26,7 @@ O backend é uma API desenvolvida em **Java (Spring Boot)**. A forma mais rápid
 docker compose up
 ```
 
-Após o carregamento, a API estará acessível em `http://localhost:8080`. Para maiores detalhes de configuração, acesse o [Repositório da API Java](https://github.com).
+Após o carregamento, a API estará acessível em `http://localhost:8080`. Para maiores detalhes de configuração, acesse o [Repositório da API Java](https://github.com/Livia2710/javaMindU.git)
 
 ---
 
