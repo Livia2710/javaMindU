@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table
@@ -39,8 +40,12 @@ public class Profissional extends Usuario{
     @Column(columnDefinition = "bytea")
     private byte[] foto;
 
+    private String fotoContentType;
+
     @Column(columnDefinition = "bytea")
     private byte[] fotoBanner;
+
+    private String fotoBannerContentType;
 
     @Column(nullable = false, columnDefinition = "bytea")
     private byte[] fotoCarterinha;
@@ -49,9 +54,11 @@ public class Profissional extends Usuario{
     private StatusVerificacao status;
 
     @OneToMany(mappedBy = "profissional", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LocalAtendimento> locaisAtendimento;
+    @lombok.Builder.Default
+    private List<LocalAtendimento> locaisAtendimento = new ArrayList<>();
 
     @OneToMany(mappedBy = "profissional", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Disponibilidade> disponibilidades;
+    @lombok.Builder.Default
+    private List<Disponibilidade> disponibilidades = new ArrayList<>();
 
 }

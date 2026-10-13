@@ -13,11 +13,14 @@ import com.example.mindu.infra.repository.ProfissionalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -28,49 +31,26 @@ public class AgendamentoServiceImpl implements AgendamentoService {
     private final ClienteRepository clienteRepository;
     private final ProfissionalRepository profissionalRepository;
 
+    @Value("${mindu.agendamento.duracao-minutos:50}")
+    private int duracaoConsultaMinutos;
+
+    @Value("${mindu.agendamento.fuso-horario:America/Sao_Paulo}")
+    private String fusoHorario;
+
     @Override
     @Transactional
     public Agendamento agendar(String clienteId, String profissionalId, LocalDateTime dataHora) {
 
         // Validação 1 (RN10) — profissional existe
-        Profissional profissional = profissionalRepository.findById(profissionalId)
+        Profissional profissional = profissionalRepository.findByIdForUpdate(profissionalId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
 
-        // Validação 2 (RN10) — não dá pra marcar consulta com quem não foi aprovado pelo Admin
-        if (profissional.getStatus() != StatusVerificacao.APROVADO) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Profissional não está aprovado");
-        }
-
-        // Validação 3 (RN10) — o horário pedido precisa estar dentro de algum
-        // bloco de disponibilidade que o Profissional cadastrou (módulo 12/RF09)
-        boolean dentroDaDisponibilidade = profissional.getDisponibilidades().stream()
-                .anyMatch(d -> d.getDiaSemana() == diaSemanaDe(dataHora)
-                        && !dataHora.toLocalTime().isBefore(d.getHoraInicio())
-                        &&  dataHora.toLocalTime().isBefore(d.getHoraFim()));
-
-        if (!dentroDaDisponibilidade) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Horário fora da disponibilidade do profissional");
-        }
-
-        // Validação 4 (RN10) — não pode ter outro agendamento ativo no mesmo
-        // horário exato. Busca só os agendamentos DAQUELE dia (mais barato que
-        // trazer o histórico inteiro do Profissional) e filtra em memória.
-        LocalDateTime inicioDoDia = dataHora.toLocalDate().atStartOfDay();
-        LocalDateTime fimDoDia = inicioDoDia.plusDays(1);
-        List<Agendamento> agendamentosDoDia = agendamentoRepository
-                .findByProfissionalIdAndDataHoraBetween(profissionalId, inicioDoDia, fimDoDia);
-
-        boolean conflito = agendamentosDoDia.stream()
-                .anyMatch(a -> a.getStatus() != StatusAgendamento.CANCELADO
-                        && a.getDataHora().equals(dataHora));
-
-        if (conflito) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Horário já ocupado");
-        }
+        validarHorario(profissional, dataHora, null);
 
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+        if (cliente.getStatus() != com.example.mindu.domain.enums.StatusCadastroCliente.APROVADO)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cliente ainda não foi aprovado pela empresa");
 
         Agendamento agendamento = Agendamento.builder()
                 .cliente(cliente)
@@ -80,6 +60,49 @@ public class AgendamentoServiceImpl implements AgendamentoService {
                 .build();
 
         return agendamentoRepository.save(agendamento);
+    }
+
+    @Override
+    @Transactional
+    public Agendamento reagendar(String agendamentoId, LocalDateTime novaDataHora) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
+        if (agendamento.getStatus() == StatusAgendamento.CANCELADO)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Agendamento cancelado não pode ser reagendado");
+
+        Profissional profissional = profissionalRepository.findByIdForUpdate(agendamento.getProfissional().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
+        validarHorario(profissional, novaDataHora, agendamentoId);
+        agendamento.setDataHora(novaDataHora);
+        return agendamentoRepository.save(agendamento);
+    }
+
+    private void validarHorario(Profissional profissional, LocalDateTime dataHora, String agendamentoIgnorado) {
+        if (!dataHora.isAfter(LocalDateTime.now(ZoneId.of(fusoHorario))))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O horário precisa estar no futuro");
+        if (profissional.getStatus() != StatusVerificacao.APROVADO)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Profissional não está aprovado");
+
+        boolean dentroDaDisponibilidade = profissional.getDisponibilidades().stream()
+                .anyMatch(d -> d.getDiaSemana() == diaSemanaDe(dataHora)
+                        && !dataHora.toLocalTime().isBefore(d.getHoraInicio())
+                        && !dataHora.toLocalTime().plusMinutes(duracaoConsultaMinutos).isAfter(d.getHoraFim())
+                        && Duration.between(d.getHoraInicio(), dataHora.toLocalTime()).getSeconds()
+                                % (duracaoConsultaMinutos * 60L) == 0
+                        && dataHora.getSecond() == 0 && dataHora.getNano() == 0);
+        if (!dentroDaDisponibilidade)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Horário fora da disponibilidade ou do intervalo de agendamento");
+
+        LocalDateTime inicioDoDia = dataHora.toLocalDate().atStartOfDay();
+        List<Agendamento> agendamentosDoDia = agendamentoRepository.findByProfissionalIdAndDataHoraBetween(
+                profissional.getId(), inicioDoDia, inicioDoDia.plusDays(1));
+        boolean conflito = agendamentosDoDia.stream()
+                .filter(a -> !a.getId().equals(agendamentoIgnorado))
+                .anyMatch(a -> a.getStatus() != StatusAgendamento.CANCELADO
+                        && dataHora.isBefore(a.getDataHora().plusMinutes(duracaoConsultaMinutos))
+                        && dataHora.plusMinutes(duracaoConsultaMinutos).isAfter(a.getDataHora()));
+        if (conflito) throw new ResponseStatusException(HttpStatus.CONFLICT, "Horário já ocupado");
     }
 
     @Override

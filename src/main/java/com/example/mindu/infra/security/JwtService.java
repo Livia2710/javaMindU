@@ -27,9 +27,10 @@ public class JwtService {
 
     // Monta o token: quem é o dono (subject = email), quando foi emitido,
     // quando expira, e assina tudo isso com a chave.
-    public String gerarToken(String email) {
+    public String gerarToken(String email, String role) {
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiracaoMs))
                 .signWith(getKey())
@@ -41,6 +42,11 @@ public class JwtService {
     public String extrairEmail(String token) {
         return Jwts.parser().verifyWith(getKey()).build()
                 .parseSignedClaims(token).getPayload().getSubject();
+    }
+
+    public String extrairRole(String token) {
+        return Jwts.parser().verifyWith(getKey()).build()
+                .parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
     // Só checa se o token é válido (assinatura correta + não expirado), sem

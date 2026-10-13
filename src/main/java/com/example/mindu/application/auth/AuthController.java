@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -60,8 +61,43 @@ public class AuthController {
         usuario.setBloqueadoAte(null);
         salvar(usuario);
 
-        String token = jwtService.gerarToken(usuario.getEmail());
-        return ResponseEntity.ok(Map.of("token", token));
+        String tipo = tipoConta(usuario);
+        String token = jwtService.gerarToken(usuario.getEmail(), tipo);
+        return ResponseEntity.ok(Map.of("token", token, "tipo", tipo));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> minhaConta(@AuthenticationPrincipal String email) {
+        Usuario usuario = buscarPorEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Conta não encontrada"));
+        Map<String, Object> resposta = new java.util.LinkedHashMap<>();
+        resposta.put("id", usuario.getId());
+        resposta.put("nome", usuario.getNome());
+        resposta.put("email", usuario.getEmail());
+        resposta.put("tipo", tipoConta(usuario));
+        if (usuario instanceof Cliente c) resposta.put("status", c.getStatus());
+        if (usuario instanceof Profissional p) resposta.put("status", p.getStatus());
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PutMapping("/senha")
+    public ResponseEntity<Void> trocarSenha(@AuthenticationPrincipal String email,
+                                             @RequestBody @Valid TrocaSenhaDTO dto) {
+        Usuario usuario = buscarPorEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Conta não encontrada"));
+        if (!passwordEncoder.matches(dto.getSenhaAtual(), usuario.getSenha()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha atual incorreta");
+        usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
+        salvar(usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    private String tipoConta(Usuario usuario) {
+        if (usuario instanceof Admin) return "ADMIN";
+        if (usuario instanceof Cliente) return "CLIENTE";
+        if (usuario instanceof Empresa) return "EMPRESA";
+        if (usuario instanceof Profissional) return "PROFISSIONAL";
+        throw new IllegalStateException("Tipo de conta desconhecido");
     }
 
     // LER dá pra fazer devolvendo como "Usuario" — como Cliente/Empresa/

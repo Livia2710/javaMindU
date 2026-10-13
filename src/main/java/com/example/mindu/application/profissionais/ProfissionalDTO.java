@@ -12,7 +12,6 @@ import java.util.List;
 public class ProfissionalDTO {
     private String id;
     private String nome;
-    private String email;
     private TipoProfissional tipo;
     private List<String> tags;
     private StatusVerificacao status;

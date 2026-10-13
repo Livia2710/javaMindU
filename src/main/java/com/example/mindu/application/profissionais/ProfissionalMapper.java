@@ -29,7 +29,6 @@ public class ProfissionalMapper {
         return ProfissionalDTO.builder()
                 .id(profissional.getId())
                 .nome(profissional.getNome())
-                .email(profissional.getEmail())
                 .tipo(profissional.getTipo())
                 .tags(profissional.getTags())
                 .status(profissional.getStatus())
@@ -82,5 +81,20 @@ public class ProfissionalMapper {
 
     public List<ProfissionalDTO> toDTOList(List<Profissional> profissionais) {
         return profissionais.stream().map(this::toDTO).toList();
+    }
+
+    public ProfissionalDetalheDTO toDetalheDTO(Profissional profissional) {
+        return ProfissionalDetalheDTO.builder()
+                .id(profissional.getId())
+                .nome(profissional.getNome())
+                .tipo(profissional.getTipo())
+                .tags(profissional.getTags())
+                .locais(profissional.getLocaisAtendimento() == null ? List.of()
+                        : profissional.getLocaisAtendimento().stream().map(this::toDTO).toList())
+                .disponibilidadeSemanal(profissional.getDisponibilidades() == null ? List.of()
+                        : profissional.getDisponibilidades().stream().map(this::toDTO).toList())
+                .fotoUrl("/v1/profissionais/" + profissional.getId() + "/foto")
+                .bannerUrl("/v1/profissionais/" + profissional.getId() + "/banner")
+                .build();
     }
 }

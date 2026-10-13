@@ -11,11 +11,19 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProfissionalRepository extends JpaRepository<Profissional, String>,
         JpaSpecificationExecutor<Profissional> { // habilita o findAll(Specification<>) usado abaixo
 
     Optional<Profissional> findByEmail(String email); // login
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Profissional p where p.id = :id")
+    Optional<Profissional> findByIdForUpdate(@Param("id") String id);
 
     boolean existsByEmail(String email); // RF07 — 409 amigável em vez de erro cru de constraint
 

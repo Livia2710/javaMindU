@@ -12,4 +12,5 @@ public interface ClienteService {
     Cliente completarCadastro(String clienteId, DadosSensiveisDTO dto); // RF04, RN05
     Cliente buscarPorId(String id);
     List<Cliente> listarPorEmpresa(String empresaId, StatusCadastroCliente status);
+    List<Cliente> listarTodos(StatusCadastroCliente status);
 }

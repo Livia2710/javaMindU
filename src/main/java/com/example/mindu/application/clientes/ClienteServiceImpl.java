@@ -105,4 +105,11 @@ public class ClienteServiceImpl implements ClienteService {
         if (status == null) return clientes;
         return clientes.stream().filter(c -> c.getStatus() == status).toList();
     }
+
+    @Override
+    public List<Cliente> listarTodos(StatusCadastroCliente status) {
+        List<Cliente> clientes = clienteRepository.findAll();
+        if (status == null) return clientes;
+        return clientes.stream().filter(c -> c.getStatus() == status).toList();
+    }
 }

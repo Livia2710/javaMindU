@@ -23,6 +23,9 @@ spring:
       max-request-size: 20MB
 
 mindu:
+  agendamento:
+    duracao-minutos: ${MINDU_AGENDAMENTO_DURACAO_MINUTOS:50}
+    fuso-horario: ${MINDU_AGENDAMENTO_FUSO_HORARIO:America/Sao_Paulo}
   jwt:
     secret: "${MINDU_JWT_SECRET:coloque-uma-chave-bem-grande-e-secreta-aqui-pelo-menos-24-caracteres}"
     expiracao-ms: 3600000

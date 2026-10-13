@@ -38,12 +38,11 @@ public class JwtFilter extends OncePerRequestFilter {
         if (jwtService.tokenValido(token)) {
             String email = jwtService.extrairEmail(token);
 
-            // Isso é o "avisa pro Spring Security que esse usuário está autenticado".
-            // Os 3 parâmetros são: principal (quem é — aqui, o email), credentials
-            // (senha — null porque já validamos via token, não precisa mais dela),
-            // authorities (permissões/roles — List.of() = nenhuma, por isso hoje
-            // o Security não distingue Cliente de Admin, como comentei antes).
-            var auth = new UsernamePasswordAuthenticationToken(email, null, List.of());
+            // O tipo de conta é uma claim assinada no token emitido pelo login;
+            // o Spring Security usa esse papel nas regras de autorização.
+            String role = jwtService.extrairRole(token);
+            var auth = new UsernamePasswordAuthenticationToken(email, null,
+                    List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)));
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
         // Se o token for inválido, simplesmente não autentica ninguém — a requisição
