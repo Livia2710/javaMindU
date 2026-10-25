@@ -1,5 +1,5 @@
--- Execute uma vez antes de iniciar a aplicação com SPRING_PROFILES_ACTIVE=prod.
--- Alinha o esquema existente às versões novas dos campos e ao versionamento dos JWTs.
+-- Executado automaticamente no perfil prod antes da validação do Hibernate.
+-- As operações são idempotentes para que possam rodar a cada inicialização.
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE cliente ADD COLUMN IF NOT EXISTS cep VARCHAR(255);
 ALTER TABLE cliente ADD COLUMN IF NOT EXISTS logradouro VARCHAR(255);

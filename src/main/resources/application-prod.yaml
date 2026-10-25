@@ -3,6 +3,11 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+  sql:
+    init:
+      # Aplica alterações idempotentes no schema antes do Hibernate validar as entidades.
+      mode: always
+      schema-locations: classpath:db/manual/security-hardening.sql
   jpa:
     hibernate:
       ddl-auto: validate
