@@ -40,29 +40,12 @@ public class AuthController {
         Usuario usuario = buscarPorEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas"));
 
-        if (usuario.getBloqueadoAte() != null) {
-            if (usuario.getBloqueadoAte().isAfter(LocalDateTime.now())) {
-                throw new ResponseStatusException(HttpStatus.LOCKED, "Conta bloqueada. Tente novamente mais tarde.");
-            }
-            usuario.setBloqueadoAte(null);
-            usuario.setTentativasLogin(0); // bloqueio expirou: recomeça a contagem
-        }
-
         if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {
-            usuario.setTentativasLogin(usuario.getTentativasLogin() + 1);
-            if (usuario.getTentativasLogin() >= 5) {
-                usuario.setBloqueadoAte(LocalDateTime.now().plusMinutes(15)); // RN07
-            }
-            salvar(usuario); // antes: usuarioRepository.save(usuario)
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
         }
 
-        usuario.setTentativasLogin(0);
-        usuario.setBloqueadoAte(null);
-        salvar(usuario);
-
         String tipo = tipoConta(usuario);
-        String token = jwtService.gerarToken(usuario.getEmail(), tipo);
+        String token = jwtService.gerarToken(usuario.getEmail(), tipo, usuario.getTokenVersion());
         return ResponseEntity.ok(Map.of("token", token, "tipo", tipo));
     }
 
@@ -88,6 +71,7 @@ public class AuthController {
         if (!passwordEncoder.matches(dto.getSenhaAtual(), usuario.getSenha()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha atual incorreta");
         usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
+        usuario.setTokenVersion(usuario.getTokenVersion() + 1);
         salvar(usuario);
         return ResponseEntity.noContent().build();
     }

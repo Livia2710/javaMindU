@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +20,12 @@ public class JwtService {
     @Value("${mindu.jwt.expiracao-ms}")
     private long expiracaoMs;
 
+    @PostConstruct
+    void validarSecret() {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32)
+            throw new IllegalStateException("MINDU_JWT_SECRET precisa ter ao menos 32 bytes.");
+    }
+
     // Converte a String SECRET numa SecretKey no formato que a lib jjwt exige
     // pra assinar/verificar com o algoritmo HMAC-SHA.
     private SecretKey getKey() {
@@ -27,10 +34,11 @@ public class JwtService {
 
     // Monta o token: quem é o dono (subject = email), quando foi emitido,
     // quando expira, e assina tudo isso com a chave.
-    public String gerarToken(String email, String role) {
+    public String gerarToken(String email, String role, int tokenVersion) {
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim("ver", tokenVersion)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiracaoMs))
                 .signWith(getKey())
@@ -42,6 +50,11 @@ public class JwtService {
     public String extrairEmail(String token) {
         return Jwts.parser().verifyWith(getKey()).build()
                 .parseSignedClaims(token).getPayload().getSubject();
+    }
+
+    public int extrairTokenVersion(String token) {
+        return Jwts.parser().verifyWith(getKey()).build()
+                .parseSignedClaims(token).getPayload().get("ver", Integer.class);
     }
 
     public String extrairRole(String token) {

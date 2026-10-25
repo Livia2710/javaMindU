@@ -5,6 +5,7 @@ import com.example.mindu.domain.enums.Modalidade;
 import com.example.mindu.domain.enums.StatusVerificacao;
 import com.example.mindu.domain.service.ProfissionalService;
 import com.example.mindu.infra.security.ResourceAccessService;
+import com.example.mindu.infra.security.ImageUploadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,15 +26,15 @@ public class ProfissionalController {
     private final ProfissionalService service;
     private final ProfissionalMapper mapper;
     private final ResourceAccessService access;
+    private final ImageUploadService imageUploadService;
 
-    // RF07, RF10 — cadastro. Só fotoCarteirinha é obrigatória (decisão sua:
-    // foto/fotoBanner saem completamente daqui). Rota pública (permitAll).
+    // RF07, RF10 — cadastro público; arquivos e campos complementares são opcionais.
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfissionalDTO> cadastrar(
             @ModelAttribute @Valid ProfissionalCadastroDTO dto,
             @RequestPart(value = "fotoCarteirinha", required = false) MultipartFile fotoCarteirinha
     ) throws IOException {
-        Profissional profissional = mapper.toEntity(dto, fotoCarteirinha);
+        Profissional profissional = mapper.toEntity(dto, imageUploadService.normalizar(fotoCarteirinha));
         Profissional salvo = service.cadastrar(profissional);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDTO(salvo));
     }
@@ -73,11 +74,11 @@ public class ProfissionalController {
             @AuthenticationPrincipal String email
     ) throws IOException {
         access.exigirProfissionalDono(id, email);
-        byte[] fotoBytes = (foto != null) ? foto.getBytes() : null;
-        byte[] bannerBytes = (fotoBanner != null) ? fotoBanner.getBytes() : null;
+        byte[] fotoBytes = imageUploadService.normalizar(foto);
+        byte[] bannerBytes = imageUploadService.normalizar(fotoBanner);
         return ResponseEntity.ok(mapper.toDTO(service.atualizarPerfil(id, fotoBytes,
-                foto == null ? null : foto.getContentType(), bannerBytes,
-                fotoBanner == null ? null : fotoBanner.getContentType())));
+                foto == null ? null : "image/png", bannerBytes,
+                fotoBanner == null ? null : "image/png")));
     }
 
     @GetMapping("/conta/perfil")
@@ -111,7 +112,7 @@ public class ProfissionalController {
         if (profissional.getStatus() != StatusVerificacao.APROVADO) return ResponseEntity.notFound().build();
         if (profissional.getFoto() == null || profissional.getFoto().length == 0)
             return ResponseEntity.notFound().build();
-        return ResponseEntity.ok().contentType(mediaType(profissional.getFotoContentType()))
+        return ResponseEntity.ok().header("X-Content-Type-Options", "nosniff").contentType(MediaType.IMAGE_PNG)
                 .body(profissional.getFoto());
     }
 
@@ -121,14 +122,8 @@ public class ProfissionalController {
         if (profissional.getStatus() != StatusVerificacao.APROVADO) return ResponseEntity.notFound().build();
         if (profissional.getFotoBanner() == null || profissional.getFotoBanner().length == 0)
             return ResponseEntity.notFound().build();
-        return ResponseEntity.ok().contentType(mediaType(profissional.getFotoBannerContentType()))
+        return ResponseEntity.ok().header("X-Content-Type-Options", "nosniff").contentType(MediaType.IMAGE_PNG)
                 .body(profissional.getFotoBanner());
-    }
-
-    private MediaType mediaType(String value) {
-        if (value == null || !value.startsWith("image/")) return MediaType.APPLICATION_OCTET_STREAM;
-        try { return MediaType.parseMediaType(value); }
-        catch (IllegalArgumentException ignored) { return MediaType.APPLICATION_OCTET_STREAM; }
     }
 
     // RF13, RN06 — pesquisa pública de profissionais aprovados

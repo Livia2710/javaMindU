@@ -19,15 +19,16 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 20MB
-      max-request-size: 20MB
+      max-file-size: 5MB
+      max-request-size: 10MB
 
 mindu:
   agendamento:
     duracao-minutos: ${MINDU_AGENDAMENTO_DURACAO_MINUTOS:50}
     fuso-horario: ${MINDU_AGENDAMENTO_FUSO_HORARIO:America/Sao_Paulo}
   jwt:
-    secret: "${MINDU_JWT_SECRET:coloque-uma-chave-bem-grande-e-secreta-aqui-pelo-menos-24-caracteres}"
+    # Chaves abaixo são apenas para desenvolvimento local; produção usa o perfil prod.
+    secret: "${MINDU_JWT_SECRET:local-dev-only-jwt-key-change-before-deploy-32bytes}"
     expiracao-ms: 3600000
   criptografia:
     chave: "${MINDU_CRIPTOGRAFIA_CHAVE:mindu-chave-16ch}"

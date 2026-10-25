@@ -5,6 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import com.example.mindu.domain.entity.Usuario;
+import io.jsonwebtoken.JwtException;
+import com.example.mindu.infra.repository.ClienteRepository;
+import com.example.mindu.infra.repository.EmpresaRepository;
+import com.example.mindu.infra.repository.ProfissionalRepository;
+import com.example.mindu.infra.repository.AdminRepository;
+import java.util.Optional;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -18,6 +25,10 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final ClienteRepository clienteRepository;
+    private final EmpresaRepository empresaRepository;
+    private final ProfissionalRepository profissionalRepository;
+    private final AdminRepository adminRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -35,15 +46,24 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = header.substring(7); // remove os 7 caracteres de "Bearer " e sobra só o token
 
-        if (jwtService.tokenValido(token)) {
-            String email = jwtService.extrairEmail(token);
-
-            // O tipo de conta é uma claim assinada no token emitido pelo login;
-            // o Spring Security usa esse papel nas regras de autorização.
-            String role = jwtService.extrairRole(token);
-            var auth = new UsernamePasswordAuthenticationToken(email, null,
-                    List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        try {
+            if (jwtService.tokenValido(token)) {
+                String email = jwtService.extrairEmail(token);
+                int tokenVersion = jwtService.extrairTokenVersion(token);
+                Usuario usuario = clienteRepository.findByEmail(email).map(Usuario.class::cast)
+                        .or(() -> empresaRepository.findByEmail(email).map(Usuario.class::cast))
+                        .or(() -> profissionalRepository.findByEmail(email).map(Usuario.class::cast))
+                        .or(() -> adminRepository.findByEmail(email).map(Usuario.class::cast))
+                        .orElse(null);
+                if (usuario != null && usuario.getTokenVersion() == tokenVersion) {
+                    String role = jwtService.extrairRole(token);
+                    var auth = new UsernamePasswordAuthenticationToken(email, null,
+                            List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            }
+        } catch (JwtException | IllegalArgumentException ignored) {
+            SecurityContextHolder.clearContext();
         }
         // Se o token for inválido, simplesmente não autentica ninguém — a requisição
         // segue "anônima", e cai na regra do SecurityConfig (que vai barrar com 401

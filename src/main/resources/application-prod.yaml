@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+mindu:
+  jwt:
+    secret: ${MINDU_JWT_SECRET}
+  criptografia:
+    chave: ${MINDU_CRIPTOGRAFIA_CHAVE}

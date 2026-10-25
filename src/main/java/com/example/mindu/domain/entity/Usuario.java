@@ -33,6 +33,10 @@ public abstract class Usuario {
 
     @Column(nullable = false)
     @Builder.Default
+    private int tokenVersion = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
     private int tentativasLogin = 0;
 
     private LocalDateTime bloqueadoAte;

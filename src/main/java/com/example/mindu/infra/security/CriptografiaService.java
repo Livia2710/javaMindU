@@ -2,6 +2,7 @@ package com.example.mindu.infra.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -17,6 +18,13 @@ public class CriptografiaService {
     @Value("${mindu.criptografia.chave}")
     private String chave;
 
+    @PostConstruct
+    void validarChave() {
+        int tamanho = chave == null ? 0 : chave.getBytes(StandardCharsets.UTF_8).length;
+        if (tamanho != 16 && tamanho != 24 && tamanho != 32)
+            throw new IllegalStateException("MINDU_CRIPTOGRAFIA_CHAVE precisa ter 16, 24 ou 32 bytes.");
+    }
+
     private static final int TAMANHO_IV = 12;
     private static final int TAMANHO_TAG = 128;
 
@@ -26,7 +34,7 @@ public class CriptografiaService {
             new SecureRandom().nextBytes(iv);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(chave.getBytes(), "AES"),
+            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(chave.getBytes(StandardCharsets.UTF_8), "AES"),
                     new GCMParameterSpec(TAMANHO_TAG, iv));
 
             byte[] encriptado = cipher.doFinal(texto.getBytes(StandardCharsets.UTF_8));
@@ -50,7 +58,7 @@ public class CriptografiaService {
             buffer.get(encriptado);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(chave.getBytes(), "AES"),
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(chave.getBytes(StandardCharsets.UTF_8), "AES"),
                     new GCMParameterSpec(TAMANHO_TAG, iv));
 
             return new String(cipher.doFinal(encriptado), StandardCharsets.UTF_8);

@@ -4,9 +4,6 @@ import com.example.mindu.domain.entity.Disponibilidade;
 import com.example.mindu.domain.entity.LocalAtendimento;
 import com.example.mindu.domain.entity.Profissional;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.List;
 
 @Component
@@ -14,14 +11,14 @@ public class ProfissionalMapper {
 
     // fotoCarteirinha é o único arquivo que entra no cadastro — foto/fotoBanner
     // ficam null aqui de propósito, só são preenchidos depois via atualizarPerfil.
-    public Profissional toEntity(ProfissionalCadastroDTO dto, MultipartFile fotoCarteirinha) throws IOException {
+    public Profissional toEntity(ProfissionalCadastroDTO dto, byte[] fotoCarteirinha) {
         return Profissional.builder()
                 .nome(dto.getNome())
                 .email(dto.getEmail())
                 .senha(dto.getSenha())
                 .tipo(dto.getTipo())
                 .tags(dto.getTags() == null ? List.of() : dto.getTags())
-                .fotoCarterinha(fotoCarteirinha == null ? null : fotoCarteirinha.getBytes())
+                .fotoCarterinha(fotoCarteirinha)
                 .build();
     }
 
