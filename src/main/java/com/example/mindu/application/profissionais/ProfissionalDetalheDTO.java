@@ -9,6 +9,7 @@ import java.util.List;
 public record ProfissionalDetalheDTO(
         String id,
         String nome,
+        String bio,
         TipoProfissional tipo,
         List<String> tags,
         List<LocalAtendimentoDTO> locais,

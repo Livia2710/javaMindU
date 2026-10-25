@@ -22,8 +22,10 @@ import java.util.ArrayList;
 public class Profissional extends Usuario{
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private TipoProfissional tipo;
+
+    @Column(length = 2000)
+    private String bio;
 
     @ElementCollection
     @CollectionTable(name = "profissional_tags", joinColumns = @JoinColumn(name = "profissional_id"))
@@ -47,7 +49,7 @@ public class Profissional extends Usuario{
 
     private String fotoBannerContentType;
 
-    @Column(nullable = false, columnDefinition = "bytea")
+    @Column(columnDefinition = "bytea")
     private byte[] fotoCarterinha;
 
     @Enumerated(EnumType.STRING)

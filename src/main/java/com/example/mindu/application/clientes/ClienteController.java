@@ -36,6 +36,18 @@ public class ClienteController {
         return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(clienteId)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ClienteDTO> perfilPorId(@PathVariable String id, @AuthenticationPrincipal String email) {
+        access.exigirClienteDono(id, email);
+        return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(id)));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ClienteDTO> atualizarMeuPerfil(@RequestBody @Valid ClientePerfilDTO dto, @AuthenticationPrincipal String email) {
+        String id = access.clienteIdDoUsuario(email);
+        return ResponseEntity.ok(mapper.toDTO(service.atualizarPerfil(id, dto)));
+    }
+
     @PatchMapping("/me/dados-sensiveis")
     public ResponseEntity<ClienteDTO> completarMeusDados(@RequestBody @Valid DadosSensiveisDTO dto,
                                                           @AuthenticationPrincipal String email) {
@@ -52,6 +64,12 @@ public class ClienteController {
     }
 
     // RF04 — só funciona se status já for APROVADO (RN05, validado no Service)
+    @PatchMapping("/{id}")
+    public ResponseEntity<ClienteDTO> atualizarPerfil(@PathVariable String id, @RequestBody @Valid ClientePerfilDTO dto, @AuthenticationPrincipal String email) {
+        access.exigirClienteDono(id, email);
+        return ResponseEntity.ok(mapper.toDTO(service.atualizarPerfil(id, dto)));
+    }
+
     @PatchMapping("/{id}/dados-sensiveis")
     public ResponseEntity<ClienteDTO> completarCadastro(@PathVariable String id,
                                                         @RequestBody @Valid DadosSensiveisDTO dto,

@@ -11,6 +11,7 @@ public interface ClienteService {
     Cliente aprovar(String clienteId, boolean aprovado); // RF03
     Cliente completarCadastro(String clienteId, DadosSensiveisDTO dto); // RF04, RN05
     Cliente buscarPorId(String id);
+    Cliente atualizarPerfil(String id, com.example.mindu.application.clientes.ClientePerfilDTO dto);
     List<Cliente> listarPorEmpresa(String empresaId, StatusCadastroCliente status);
     List<Cliente> listarTodos(StatusCadastroCliente status);
 }

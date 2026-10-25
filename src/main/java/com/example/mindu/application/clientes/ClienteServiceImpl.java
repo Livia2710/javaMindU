@@ -92,6 +92,23 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @Transactional
+    public Cliente atualizarPerfil(String id, ClientePerfilDTO dto) {
+        Cliente c = buscarPorId(id);
+        if (dto.getNome() != null) c.setNome(dto.getNome());
+        if (dto.getEmail() != null) c.setEmail(dto.getEmail());
+        if (dto.getTelefone() != null) c.setTelefone(dto.getTelefone());
+        if (dto.getCep() != null) c.setCep(dto.getCep());
+        if (dto.getLogradouro() != null) c.setLogradouro(dto.getLogradouro());
+        if (dto.getNumero() != null) c.setNumero(dto.getNumero());
+        if (dto.getComplemento() != null) c.setComplemento(dto.getComplemento());
+        if (dto.getBairro() != null) c.setBairro(dto.getBairro());
+        if (dto.getCidade() != null) c.setCidade(dto.getCidade());
+        if (dto.getEstado() != null) c.setEstado(dto.getEstado());
+        return clienteRepository.save(c);
+    }
+
+    @Override
     public Cliente buscarPorId(String id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));

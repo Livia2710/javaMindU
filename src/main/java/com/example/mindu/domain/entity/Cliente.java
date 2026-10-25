@@ -38,6 +38,14 @@ public class Cliente extends Usuario{
     @Enumerated(EnumType.STRING)
     private Genero genero;
 
+    private String cep;
+    private String logradouro;
+    private String numero;
+    private String complemento;
+    private String bairro;
+    private String cidade;
+    private String estado;
+
     @Enumerated(EnumType.STRING)
     private StatusCadastroCliente status;
 

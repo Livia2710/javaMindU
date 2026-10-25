@@ -29,7 +29,37 @@ public class EmpresaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDTO(salva));
     }
 
+    @GetMapping("/validar-matricula")
+    public ResponseEntity<?> validarMatricula(@RequestParam String codigo) {
+        var matricula = service.validarMatricula(codigo);
+        return ResponseEntity.ok(java.util.Map.of("empresaId", matricula.getEmpresa().getId(),
+                "nomeFantasia", matricula.getEmpresa().getNomeFantasia()));
+    }
+
     // Consulta de dados da própria Empresa (vagas usadas/disponíveis do plano)
+    @GetMapping("/me")
+    public ResponseEntity<EmpresaDTO> minhaEmpresa(@AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(access.empresaIdDoUsuario(email))));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EmpresaDTO> empresaPorId(@PathVariable String id, @AuthenticationPrincipal String email) {
+        access.exigirEmpresaDona(id, email);
+        return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(id)));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<EmpresaDTO> atualizarMinhaEmpresa(@RequestBody @Valid EmpresaPerfilDTO dto, @AuthenticationPrincipal String email) {
+        String id = access.empresaIdDoUsuario(email);
+        return ResponseEntity.ok(mapper.toDTO(service.atualizarPerfil(id, dto)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EmpresaDTO> atualizarEmpresa(@PathVariable String id, @RequestBody @Valid EmpresaPerfilDTO dto, @AuthenticationPrincipal String email) {
+        access.exigirEmpresaDona(id, email);
+        return ResponseEntity.ok(mapper.toDTO(service.atualizarPerfil(id, dto)));
+    }
+
     @GetMapping("/me/dashboard")
     public ResponseEntity<EmpresaDTO> meuDashboard(@AuthenticationPrincipal String email) {
         String id = access.empresaIdDoUsuario(email);

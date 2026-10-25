@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
+import java.time.YearMonth;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/v1/agendamentos")
@@ -31,7 +33,7 @@ public class AgendamentoController {
         if (clienteId == null || clienteId.isBlank())
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "clienteId é obrigatório para o Admin");
-        Agendamento agendamento = service.agendar(clienteId, dto.getProfissionalId(), dto.getDataHora());
+        Agendamento agendamento = service.agendar(clienteId, dto.getProfissionalId(), dto.getDataHora(), dto.getModalidade());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDTO(agendamento));
     }
 
@@ -53,15 +55,23 @@ public class AgendamentoController {
     // pra poder cancelar (PATCH /{id}/cancelamento já existe, mas de onde viria
     // o id?) — e a tela "meus agendamentos" de qualquer app real precisa disso.
     @GetMapping("/meus")
-    public ResponseEntity<List<AgendamentoDTO>> meusAgendamentos(@AuthenticationPrincipal String email) {
-        if (access.isAdmin()) return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findAll()));
-        String clienteId = access.clienteIdDoUsuario(email);
-        return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findByClienteId(clienteId)));
+    public ResponseEntity<List<AgendamentoDTO>> meusAgendamentos(@AuthenticationPrincipal String email, @RequestParam(required = false) YearMonth data) {
+        if (data == null) {
+            if (access.isAdmin()) return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findAll()));
+            return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findByClienteId(access.clienteIdDoUsuario(email))));
+        }
+        LocalDateTime inicio = data.atDay(1).atStartOfDay();
+        LocalDateTime fim = data.plusMonths(1).atDay(1).atStartOfDay();
+        if (access.isAdmin()) return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findAll().stream().filter(a -> !a.getDataHora().isBefore(inicio) && a.getDataHora().isBefore(fim)).toList()));
+        return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findByClienteIdAndDataHoraGreaterThanEqualAndDataHoraLessThan(access.clienteIdDoUsuario(email), inicio, fim)));
     }
 
     @GetMapping("/minha-agenda")
-    public ResponseEntity<List<AgendamentoDTO>> minhaAgenda(@AuthenticationPrincipal String email) {
+    public ResponseEntity<List<AgendamentoDTO>> minhaAgenda(@AuthenticationPrincipal String email, @RequestParam(required = false) YearMonth data) {
         String profissionalId = access.profissionalIdDoUsuario(email);
-        return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findByProfissionalId(profissionalId)));
+        if (data == null) return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findByProfissionalId(profissionalId)));
+        LocalDateTime inicio = data.atDay(1).atStartOfDay();
+        LocalDateTime fim = data.plusMonths(1).atDay(1).atStartOfDay();
+        return ResponseEntity.ok(mapper.toDTOList(agendamentoRepository.findByProfissionalIdAndDataHoraGreaterThanEqualAndDataHoraLessThan(profissionalId, inicio, fim)));
     }
 }

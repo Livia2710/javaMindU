@@ -39,12 +39,14 @@ public class AgendamentoServiceImpl implements AgendamentoService {
 
     @Override
     @Transactional
-    public Agendamento agendar(String clienteId, String profissionalId, LocalDateTime dataHora) {
+    public Agendamento agendar(String clienteId, String profissionalId, LocalDateTime dataHora, com.example.mindu.domain.enums.Modalidade modalidade) {
 
         // Validação 1 (RN10) — profissional existe
         Profissional profissional = profissionalRepository.findByIdForUpdate(profissionalId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
 
+        if (profissional.getLocaisAtendimento().stream().noneMatch(l -> l.getModalidade() == modalidade))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Modalidade não oferecida pelo profissional");
         validarHorario(profissional, dataHora, null);
 
         Cliente cliente = clienteRepository.findById(clienteId)
@@ -56,6 +58,7 @@ public class AgendamentoServiceImpl implements AgendamentoService {
                 .cliente(cliente)
                 .profissional(profissional)
                 .dataHora(dataHora)
+                .modalidade(modalidade)
                 .status(StatusAgendamento.AGENDADO)
                 .build();
 

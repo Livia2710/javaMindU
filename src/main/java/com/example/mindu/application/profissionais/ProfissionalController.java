@@ -31,7 +31,7 @@ public class ProfissionalController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfissionalDTO> cadastrar(
             @ModelAttribute @Valid ProfissionalCadastroDTO dto,
-            @RequestPart("fotoCarteirinha") MultipartFile fotoCarteirinha
+            @RequestPart(value = "fotoCarteirinha", required = false) MultipartFile fotoCarteirinha
     ) throws IOException {
         Profissional profissional = mapper.toEntity(dto, fotoCarteirinha);
         Profissional salvo = service.cadastrar(profissional);
@@ -78,6 +78,18 @@ public class ProfissionalController {
         return ResponseEntity.ok(mapper.toDTO(service.atualizarPerfil(id, fotoBytes,
                 foto == null ? null : foto.getContentType(), bannerBytes,
                 fotoBanner == null ? null : fotoBanner.getContentType())));
+    }
+
+    @GetMapping("/conta/perfil")
+    public ResponseEntity<ProfissionalDTO> meuPerfil(@AuthenticationPrincipal String email) {
+        String id = access.profissionalIdDoUsuario(email);
+        return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(id)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProfissionalDTO> atualizarDados(@PathVariable String id, @RequestBody @Valid ProfissionalPerfilDTO dto, @AuthenticationPrincipal String email) {
+        access.exigirProfissionalDono(id, email);
+        return ResponseEntity.ok(mapper.toDTO(service.atualizarDados(id, dto)));
     }
 
     @GetMapping("/{id}")

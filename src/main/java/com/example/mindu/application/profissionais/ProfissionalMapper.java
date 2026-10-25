@@ -20,8 +20,8 @@ public class ProfissionalMapper {
                 .email(dto.getEmail())
                 .senha(dto.getSenha())
                 .tipo(dto.getTipo())
-                .tags(dto.getTags())
-                .fotoCarterinha(fotoCarteirinha.getBytes())
+                .tags(dto.getTags() == null ? List.of() : dto.getTags())
+                .fotoCarterinha(fotoCarteirinha == null ? null : fotoCarteirinha.getBytes())
                 .build();
     }
 
@@ -29,6 +29,7 @@ public class ProfissionalMapper {
         return ProfissionalDTO.builder()
                 .id(profissional.getId())
                 .nome(profissional.getNome())
+                .bio(profissional.getBio())
                 .tipo(profissional.getTipo())
                 .tags(profissional.getTags())
                 .status(profissional.getStatus())

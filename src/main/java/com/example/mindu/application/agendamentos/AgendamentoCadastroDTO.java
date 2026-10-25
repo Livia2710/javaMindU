@@ -2,6 +2,7 @@ package com.example.mindu.application.agendamentos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import com.example.mindu.domain.enums.Modalidade;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,4 +17,7 @@ public class AgendamentoCadastroDTO {
 
     @NotNull
     private LocalDateTime dataHora;
+
+    @NotNull
+    private Modalidade modalidade;
 }

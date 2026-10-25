@@ -45,6 +45,28 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
+    @Transactional
+    public Empresa atualizarPerfil(String id, EmpresaPerfilDTO dto) {
+        Empresa e = buscarPorId(id);
+        if (dto.getNomeFantasia()!=null) e.setNomeFantasia(dto.getNomeFantasia());
+        if (dto.getResponsavel()!=null) e.setResponsavel(dto.getResponsavel());
+        if (dto.getEmail()!=null) e.setEmail(dto.getEmail());
+        if (dto.getTelefone()!=null) e.setTelefone(dto.getTelefone());
+        if (dto.getCep()!=null) e.setCep(dto.getCep()); if (dto.getLogradouro()!=null) e.setLogradouro(dto.getLogradouro());
+        if (dto.getNumero()!=null) e.setNumero(dto.getNumero()); if (dto.getComplemento()!=null) e.setComplemento(dto.getComplemento());
+        if (dto.getBairro()!=null) e.setBairro(dto.getBairro()); if (dto.getCidade()!=null) e.setCidade(dto.getCidade()); if (dto.getEstado()!=null) e.setEstado(dto.getEstado());
+        return repository.save(e);
+    }
+
+    @Override
+    public Matricula validarMatricula(String codigo) {
+        Matricula m = matriculaRepository.findByCodigoIgnoreCase(codigo.trim())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Matrícula inválida"));
+        if (m.isUtilizada()) throw new ResponseStatusException(HttpStatus.CONFLICT, "Matrícula já utilizada");
+        return m;
+    }
+
+    @Override
     public Empresa buscarPorId(String id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));

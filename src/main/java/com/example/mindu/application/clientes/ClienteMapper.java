@@ -24,6 +24,9 @@ public class ClienteMapper {
                 .id(cliente.getId())
                 .nome(cliente.getNome())
                 .email(cliente.getEmail())
+                .telefone(cliente.getTelefone())
+                .cep(cliente.getCep()).logradouro(cliente.getLogradouro()).numero(cliente.getNumero())
+                .complemento(cliente.getComplemento()).bairro(cliente.getBairro()).cidade(cliente.getCidade()).estado(cliente.getEstado())
                 .empresaId(cliente.getEmpresa() != null ? cliente.getEmpresa().getId() : null)
                 .status(cliente.getStatus())
                 .build();

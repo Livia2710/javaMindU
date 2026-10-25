@@ -1,5 +1,7 @@
 package com.example.mindu.domain.service;
 
+import com.example.mindu.application.profissionais.ProfissionalPerfilDTO;
+
 import com.example.mindu.application.profissionais.DisponibilidadeDTO;
 import com.example.mindu.application.profissionais.LocalAtendimentoDTO;
 import com.example.mindu.domain.entity.Profissional;
@@ -16,6 +18,7 @@ public interface ProfissionalService {
     Profissional aprovar(String id, boolean aprovado); // RF16
 
     Profissional buscarPorId(String id);
+    Profissional atualizarDados(String id, ProfissionalPerfilDTO dto);
 
     LocalAtendimentoDTO adicionarLocal(String profissionalId, LocalAtendimentoDTO dto); // RF08
 

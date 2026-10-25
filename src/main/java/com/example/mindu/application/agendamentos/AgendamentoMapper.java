@@ -17,6 +17,7 @@ public class AgendamentoMapper {
                 .clienteNome(agendamento.getCliente().getNome())
                 .profissionalNome(agendamento.getProfissional().getNome())
                 .dataHora(agendamento.getDataHora())
+                .modalidade(agendamento.getModalidade())
                 .status(agendamento.getStatus())
                 .build();
     }

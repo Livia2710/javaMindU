@@ -1,5 +1,6 @@
 package com.example.mindu.domain.entity;
 import com.example.mindu.domain.enums.StatusAgendamento;
+import com.example.mindu.domain.enums.Modalidade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,9 @@ public class Agendamento {
 
     @Column(nullable = false)
     private LocalDateTime dataHora;
+
+    @Enumerated(EnumType.STRING)
+    private Modalidade modalidade;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

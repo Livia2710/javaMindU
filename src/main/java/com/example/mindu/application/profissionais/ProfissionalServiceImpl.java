@@ -64,6 +64,16 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     }
 
     @Override
+    @Transactional
+    public Profissional atualizarDados(String id, ProfissionalPerfilDTO dto) {
+        Profissional p = buscarPorId(id);
+        if (dto.getNome()!=null) p.setNome(dto.getNome()); if (dto.getEmail()!=null) p.setEmail(dto.getEmail());
+        if (dto.getTelefone()!=null) p.setTelefone(dto.getTelefone()); if (dto.getBio()!=null) p.setBio(dto.getBio());
+        if (dto.getTipo()!=null) p.setTipo(dto.getTipo()); if (dto.getTags()!=null) p.setTags(dto.getTags());
+        return repository.save(p);
+    }
+
+    @Override
     public Profissional buscarPorId(String id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
