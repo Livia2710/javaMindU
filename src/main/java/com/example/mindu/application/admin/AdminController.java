@@ -15,6 +15,8 @@ import com.example.mindu.infra.repository.EmpresaRepository;
 import com.example.mindu.infra.repository.ProfissionalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +37,7 @@ public class AdminController {
     private final EmpresaRepository empresaRepository;
     private final EmpresaMapper empresaMapper;
     private final ProfissionalRepository profissionalRepository;
+    private final ExclusaoService exclusaoService;
 
     @GetMapping("/profissionais")
     public ResponseEntity<List<ProfissionalAdminDTO>> profissionais(
@@ -64,5 +67,23 @@ public class AdminController {
     @GetMapping("/agendamentos")
     public ResponseEntity<List<AgendamentoDTO>> agendamentos() {
         return ResponseEntity.ok(agendamentoMapper.toDTOList(agendamentoRepository.findAll()));
+    }
+
+    @DeleteMapping("/clientes/{id}")
+    public ResponseEntity<Void> excluirCliente(@PathVariable String id) {
+        exclusaoService.excluirCliente(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/empresas/{id}")
+    public ResponseEntity<Void> excluirEmpresa(@PathVariable String id) {
+        exclusaoService.excluirEmpresa(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/profissionais/{id}")
+    public ResponseEntity<Void> excluirProfissional(@PathVariable String id) {
+        exclusaoService.excluirProfissional(id);
+        return ResponseEntity.noContent().build();
     }
 }

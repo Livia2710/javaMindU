@@ -8,6 +8,7 @@ import com.example.mindu.domain.service.ClienteService;
 import com.example.mindu.infra.repository.ClienteRepository;
 import com.example.mindu.infra.repository.EmpresaRepository;
 import com.example.mindu.infra.repository.MatriculaRepository;
+import com.example.mindu.infra.repository.AgendamentoRepository;
 import com.example.mindu.infra.security.CriptografiaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ public class ClienteServiceImpl implements ClienteService {
     private final ClienteRepository clienteRepository;
     private final EmpresaRepository empresaRepository;
     private final MatriculaRepository matriculaRepository;
+    private final AgendamentoRepository agendamentoRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -128,5 +130,13 @@ public class ClienteServiceImpl implements ClienteService {
         List<Cliente> clientes = clienteRepository.findAll();
         if (status == null) return clientes;
         return clientes.stream().filter(c -> c.getStatus() == status).toList();
+    }
+
+    @Override
+    @Transactional
+    public void excluir(String id) {
+        Cliente cliente = buscarPorId(id);
+        agendamentoRepository.deleteByClienteId(id);
+        clienteRepository.delete(cliente);
     }
 }

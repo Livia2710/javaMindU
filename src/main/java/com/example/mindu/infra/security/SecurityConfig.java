@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/profissionais", "/v1/profissionais/*", "/v1/profissionais/*/foto", "/v1/profissionais/*/banner").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/profissionais/*/horarios-disponiveis").permitAll()
                         .requestMatchers("/v1/admin/**", "/v1/profissionais/*/aprovacao").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/clientes/*").hasAnyRole("EMPRESA", "ADMIN")
                         .requestMatchers("/v1/auth/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/v1/profissionais/conta/perfil").hasRole("PROFISSIONAL")
                         .requestMatchers("/v1/profissionais/*/locais", "/v1/profissionais/*/disponibilidade", "/v1/profissionais/*/perfil").hasAnyRole("PROFISSIONAL", "ADMIN")

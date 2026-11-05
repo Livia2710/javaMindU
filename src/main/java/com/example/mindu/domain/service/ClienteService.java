@@ -14,4 +14,5 @@ public interface ClienteService {
     Cliente atualizarPerfil(String id, com.example.mindu.application.clientes.ClientePerfilDTO dto);
     List<Cliente> listarPorEmpresa(String empresaId, StatusCadastroCliente status);
     List<Cliente> listarTodos(StatusCadastroCliente status);
+    void excluir(String id);
 }

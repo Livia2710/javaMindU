@@ -90,5 +90,13 @@ public class ClienteController {
         return ResponseEntity.ok(mapper.toDTOList(service.listarPorEmpresa(empresaId, status)));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirFuncionario(@PathVariable String id,
+                                                    @AuthenticationPrincipal String email) {
+        access.exigirEmpresaDonaDoCliente(id, email);
+        service.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
