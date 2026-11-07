@@ -26,6 +26,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       MINDU_JWT_SECRET: local-dev-jwt-key-change-this-before-sharing-123456
       MINDU_CRIPTOGRAFIA_CHAVE: mindu-chave-16ch
+      MINDU_ADMIN_SENHA: ${MINDU_ADMIN_SENHA:?Crie .env com MINDU_ADMIN_SENHA antes de iniciar}
     depends_on:
       db:
         condition: service_healthy
