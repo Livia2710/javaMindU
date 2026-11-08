@@ -11,4 +11,5 @@ public interface EmpresaService {
     Matricula validarMatricula(String codigo);
     Empresa atualizarPerfil(String id, com.example.mindu.application.empresas.EmpresaPerfilDTO dto);
     List<Matricula> gerarMatriculas(String empresaId, int quantidade); // RF06, RN09
+    List<Matricula> listarMatriculas(String empresaId);
 }

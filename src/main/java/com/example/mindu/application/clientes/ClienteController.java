@@ -36,6 +36,12 @@ public class ClienteController {
         return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(clienteId)));
     }
 
+    @GetMapping("/me/dados-sensiveis")
+    public ResponseEntity<DadosSensiveisResponseDTO> meusDadosSensiveis(@AuthenticationPrincipal String email) {
+        String clienteId = access.clienteIdDoUsuario(email);
+        return ResponseEntity.ok(mapper.toDadosSensiveisDTO(service.buscarPorId(clienteId)));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> perfilPorId(@PathVariable String id, @AuthenticationPrincipal String email) {
         access.exigirClienteDono(id, email);

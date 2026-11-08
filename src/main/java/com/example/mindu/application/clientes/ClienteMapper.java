@@ -32,6 +32,15 @@ public class ClienteMapper {
                 .build();
     }
 
+    public DadosSensiveisResponseDTO toDadosSensiveisDTO(Cliente cliente) {
+        return new DadosSensiveisResponseDTO(
+                cliente.getCns(),
+                cliente.getDataNascimento(),
+                cliente.getNomeMae(),
+                cliente.getGenero()
+        );
+    }
+
     public List<ClienteDTO> toDTOList(List<Cliente> clientes) {
         return clientes.stream().map(this::toDTO).toList();
     }

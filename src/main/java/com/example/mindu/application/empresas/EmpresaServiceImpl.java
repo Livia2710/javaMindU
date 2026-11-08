@@ -97,4 +97,10 @@ public class EmpresaServiceImpl implements EmpresaService {
         // @Transactional garante que ou todas as matrículas são salvas, ou nenhuma
         return matriculaRepository.saveAll(novas);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Matricula> listarMatriculas(String empresaId) {
+        return matriculaRepository.findAllByEmpresaIdOrderByCodigoAsc(empresaId);
+    }
 }

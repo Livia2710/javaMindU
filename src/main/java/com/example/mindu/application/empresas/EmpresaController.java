@@ -81,11 +81,24 @@ public class EmpresaController {
         return ResponseEntity.ok(mapper.toMatriculaDTOList(matriculas));
     }
 
+    @GetMapping("/me/matriculas")
+    public ResponseEntity<List<MatriculaDTO>> listarMinhasMatriculas(@AuthenticationPrincipal String email) {
+        String id = access.empresaIdDoUsuario(email);
+        return ResponseEntity.ok(mapper.toMatriculaDTOList(service.listarMatriculas(id)));
+    }
+
     @PostMapping("/{id}/matriculas")
     public ResponseEntity<List<MatriculaDTO>> gerarMatriculas(
             @PathVariable String id, @RequestParam int quantidade, @AuthenticationPrincipal String email) {
         access.exigirEmpresaDona(id, email);
         var matriculas = service.gerarMatriculas(id, quantidade); // RN09 validado dentro do Service
         return ResponseEntity.ok(mapper.toMatriculaDTOList(matriculas));
+    }
+
+    @GetMapping("/{id}/matriculas")
+    public ResponseEntity<List<MatriculaDTO>> listarMatriculas(
+            @PathVariable String id, @AuthenticationPrincipal String email) {
+        access.exigirEmpresaDona(id, email);
+        return ResponseEntity.ok(mapper.toMatriculaDTOList(service.listarMatriculas(id)));
     }
 }
