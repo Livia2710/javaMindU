@@ -27,9 +27,62 @@ services:
       MINDU_JWT_SECRET: local-dev-jwt-key-change-this-before-sharing-123456
       MINDU_CRIPTOGRAFIA_CHAVE: mindu-chave-16ch
       MINDU_ADMIN_SENHA: ${MINDU_ADMIN_SENHA:?Crie .env com MINDU_ADMIN_SENHA antes de iniciar}
+      MILA_API_URL: http://mila:8000
+      MILA_API_KEY: ${MILA_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
+
+  mila:
+    build:
+      context: ${MILA_BUILD_CONTEXT:-../../Projetos/Mila}
+      dockerfile: Dockerfile
+      target: api
+    env_file:
+      - ${MILA_ENV_FILE:-../../Projetos/Mila/.env}
+    restart: unless-stopped
+    environment:
+      APP_ENV: development
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      GROQ_MODEL_ROUTER: ${GROQ_MODEL_ROUTER:-}
+      GROQ_STT_MODEL: ${GROQ_STT_MODEL:-whisper-large-v3-turbo}
+      LLM_TIMEOUT_S: ${LLM_TIMEOUT_S:-30}
+      LLM_MAX_RETRIES: ${LLM_MAX_RETRIES:-2}
+      MILA_DEBUG: "true"
+      MINDU_API_URL: http://api:8080
+      MINDU_API_TIMEOUT_S: ${MINDU_API_TIMEOUT_S:-8}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      RAG_TOP_K: ${RAG_TOP_K:-4}
+      RAG_MIN_RELEVANCE: ${RAG_MIN_RELEVANCE:-0.40}
+      RAG_REWRITE_FOLLOWUPS: ${RAG_REWRITE_FOLLOWUPS:-false}
+      ROUTER_MIN_CONFIDENCE: ${ROUTER_MIN_CONFIDENCE:-0.6}
+      HISTORY_MAX_TURNS: ${HISTORY_MAX_TURNS:-8}
+      ATTACH_MAX_MB: ${ATTACH_MAX_MB:-10}
+      SPECIALTIES: ${SPECIALTIES:-ansiedade,depressao,luto,estresse,relacionamento,sono,autismo,tdah}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PORT: 8000
+    depends_on:
+      api:
+        condition: service_started
+
+  mila-ui:
+    profiles: [lab]
+    build:
+      context: ${MILA_BUILD_CONTEXT:-../../Projetos/Mila}
+      dockerfile: Dockerfile
+      target: ui
+    command: ["streamlit", "run", "tools/ui.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      MILA_URL: http://mila:8000
+      MILA_API_KEY: ${MILA_API_KEY:-}
+      MILA_DEBUG: "true"
+      MINDU_API_URL: http://api:8080
+    depends_on:
+      - mila
+      - api
 
 volumes:
   mindu_local_pgdata:

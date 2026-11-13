@@ -18,6 +18,7 @@ public class AgendamentoMapper {
                 .profissionalNome(agendamento.getProfissional().getNome())
                 .dataHora(agendamento.getDataHora())
                 .modalidade(agendamento.getModalidade())
+                .linkOnline(agendamento.getLinkOnline())
                 .status(agendamento.getStatus())
                 .build();
     }

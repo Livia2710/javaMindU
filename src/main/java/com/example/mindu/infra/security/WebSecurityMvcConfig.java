@@ -8,6 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebSecurityMvcConfig implements WebMvcConfigurer {
     private final LoginRateLimitInterceptor loginRateLimitInterceptor;
     @Override public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loginRateLimitInterceptor).addPathPatterns("/v1/auth/login");
+        registry.addInterceptor(loginRateLimitInterceptor)
+                .addPathPatterns("/v1/auth/login");
     }
 }

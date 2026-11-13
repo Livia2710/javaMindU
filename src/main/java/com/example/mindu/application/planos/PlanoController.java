@@ -20,7 +20,9 @@ public class PlanoController {
     public ResponseEntity<List<PlanoDTO>> listar() {
         List<PlanoDTO> planos = repository.findAll().stream()
                 .map(plano -> new PlanoDTO(plano.getId(), plano.getNome(),
-                        plano.getVagasTotais(), plano.getPorteIndicado()))
+                        plano.getVagasTotais(), plano.getPorteIndicado(),
+                        plano.getPrecoMensalPorColaborador(),
+                        plano.getConsultasSemLimite()))
                 .toList();
         return ResponseEntity.ok(planos);
     }

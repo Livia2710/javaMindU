@@ -41,6 +41,10 @@ public abstract class Usuario {
 
     private LocalDateTime bloqueadoAte;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean ativo = true;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime criadoEm = LocalDateTime.now();

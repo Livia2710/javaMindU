@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,6 +41,9 @@ public class AuthController {
         Usuario usuario = buscarPorEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas"));
 
+        if (!usuario.isAtivo())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta desativada. Procure o suporte do MindU.");
+
         if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
         }
@@ -64,6 +68,7 @@ public class AuthController {
     }
 
     @PutMapping("/senha")
+    @Transactional
     public ResponseEntity<Void> trocarSenha(@AuthenticationPrincipal String email,
                                              @RequestBody @Valid TrocaSenhaDTO dto) {
         Usuario usuario = buscarPorEmail(email)

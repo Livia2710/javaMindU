@@ -1,4 +1,8 @@
 package com.example.mindu.application.planos;
 
-public record PlanoDTO(String id, String nome, Integer vagasTotais, String porteIndicado) {
+import java.math.BigDecimal;
+
+public record PlanoDTO(String id, String nome, Integer vagasTotais, String porteIndicado,
+                       BigDecimal precoMensalPorColaborador,
+                       Boolean consultasSemLimite) {
 }

@@ -23,3 +23,34 @@ services:
       - '15432:80'
     depends_on:
       - db
+
+  mila:
+    build:
+      context: ../../Projetos/Mila
+      dockerfile: Dockerfile
+      target: api
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      MILA_API_KEY: ${MILA_API_KEY:-}
+      APP_ENV: ${APP_ENV:-development}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      GROQ_MODEL_ROUTER: ${GROQ_MODEL_ROUTER:-}
+      GROQ_STT_MODEL: ${GROQ_STT_MODEL:-whisper-large-v3-turbo}
+      LLM_TIMEOUT_S: ${LLM_TIMEOUT_S:-30}
+      LLM_MAX_RETRIES: ${LLM_MAX_RETRIES:-2}
+      MILA_DEBUG: ${MILA_DEBUG:-false}
+      PORT: 8000
+      MINDU_API_URL: ${MINDU_API_URL:-http://host.docker.internal:8080}
+      MINDU_API_TIMEOUT_S: ${MINDU_API_TIMEOUT_S:-8}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      RAG_TOP_K: ${RAG_TOP_K:-4}
+      RAG_MIN_RELEVANCE: ${RAG_MIN_RELEVANCE:-0.40}
+      RAG_REWRITE_FOLLOWUPS: ${RAG_REWRITE_FOLLOWUPS:-false}
+      ROUTER_MIN_CONFIDENCE: ${ROUTER_MIN_CONFIDENCE:-0.6}
+      HISTORY_MAX_TURNS: ${HISTORY_MAX_TURNS:-8}
+      ATTACH_MAX_MB: ${ATTACH_MAX_MB:-10}
+      SPECIALTIES: ${SPECIALTIES:-ansiedade,depressao,luto,estresse,relacionamento,sono,autismo,tdah}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}

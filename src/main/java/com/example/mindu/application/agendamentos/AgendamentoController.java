@@ -51,6 +51,14 @@ public class AgendamentoController {
         return ResponseEntity.ok(mapper.toDTO(service.reagendar(id, dto.getDataHora())));
     }
 
+    @PatchMapping("/{id}/link-online")
+    public ResponseEntity<AgendamentoDTO> definirLinkOnline(@PathVariable String id,
+                                                             @RequestBody @Valid LinkConsultaDTO dto,
+                                                             @AuthenticationPrincipal String email) {
+        access.exigirProfissionalDoAgendamento(id, email);
+        return ResponseEntity.ok(mapper.toDTO(service.vincularLinkOnline(id, dto.getLinkOnline())));
+    }
+
     // Existe porque, sem isso, o Cliente nunca sabe o id do próprio agendamento
     // pra poder cancelar (PATCH /{id}/cancelamento já existe, mas de onde viria
     // o id?) — e a tela "meus agendamentos" de qualquer app real precisa disso.

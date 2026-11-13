@@ -3,6 +3,9 @@ package com.example.mindu.application.empresas;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 @Data
 @Builder
 public class EmpresaDTO {
@@ -23,4 +26,10 @@ public class EmpresaDTO {
     private String plano;
     private int matriculasUsadas;
     private int matriculasDisponiveis;
+    private BigDecimal precoMensalPorColaborador;
+    private Boolean consultasSemLimite;
+    private BigDecimal valorMensalEstimado;
+    private LocalDate inicioVigenciaPlano;
+    private LocalDate fimVigenciaPlano;
+    private Integer diaPagamento;
 }

@@ -15,5 +15,6 @@ public class AgendamentoDTO {
     private String profissionalNome;
     private LocalDateTime dataHora;
     private Modalidade modalidade;
+    private String linkOnline;
     private StatusAgendamento status;
 }

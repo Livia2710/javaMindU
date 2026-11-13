@@ -28,15 +28,25 @@ public class ProfissionalController {
     private final ResourceAccessService access;
     private final ImageUploadService imageUploadService;
 
-    // RF07, RF10 — cadastro público; arquivos e campos complementares são opcionais.
+    // RF07, RF10 — o envio da carteirinha é obrigatório no cadastro.
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfissionalDTO> cadastrar(
             @ModelAttribute @Valid ProfissionalCadastroDTO dto,
-            @RequestPart(value = "fotoCarteirinha", required = false) MultipartFile fotoCarteirinha
+            @RequestPart(value = "fotoCarteirinha") MultipartFile fotoCarteirinha
     ) throws IOException {
         Profissional profissional = mapper.toEntity(dto, imageUploadService.normalizar(fotoCarteirinha));
         Profissional salvo = service.cadastrar(profissional);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDTO(salvo));
+    }
+
+    @PatchMapping(value = "/{id}/carteirinha", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProfissionalDTO> reenviarCarteirinha(
+            @PathVariable String id,
+            @RequestPart(value = "fotoCarteirinha") MultipartFile fotoCarteirinha,
+            @AuthenticationPrincipal String email) throws IOException {
+        access.exigirProfissionalDono(id, email);
+        byte[] imagem = imageUploadService.normalizar(fotoCarteirinha);
+        return ResponseEntity.ok(mapper.toDTO(service.reenviarCarteirinha(id, imagem)));
     }
 
     // RF16 — só o Admin deveria poder chamar isso (hoje ainda não há restrição de
@@ -96,7 +106,7 @@ public class ProfissionalController {
     @GetMapping("/{id}")
     public ResponseEntity<ProfissionalDetalheDTO> detalhes(@PathVariable String id) {
         Profissional profissional = service.buscarPorId(id);
-        if (profissional.getStatus() != StatusVerificacao.APROVADO) return ResponseEntity.notFound().build();
+        if (profissional.getStatus() != StatusVerificacao.APROVADO || !profissional.isAtivo()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(mapper.toDetalheDTO(profissional));
     }
 
@@ -109,7 +119,7 @@ public class ProfissionalController {
     @GetMapping(value = "/{id}/foto")
     public ResponseEntity<byte[]> foto(@PathVariable String id) {
         Profissional profissional = service.buscarPorId(id);
-        if (profissional.getStatus() != StatusVerificacao.APROVADO) return ResponseEntity.notFound().build();
+        if (profissional.getStatus() != StatusVerificacao.APROVADO || !profissional.isAtivo()) return ResponseEntity.notFound().build();
         if (profissional.getFoto() == null || profissional.getFoto().length == 0)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok().header("X-Content-Type-Options", "nosniff").contentType(MediaType.IMAGE_PNG)
@@ -119,7 +129,7 @@ public class ProfissionalController {
     @GetMapping(value = "/{id}/banner")
     public ResponseEntity<byte[]> banner(@PathVariable String id) {
         Profissional profissional = service.buscarPorId(id);
-        if (profissional.getStatus() != StatusVerificacao.APROVADO) return ResponseEntity.notFound().build();
+        if (profissional.getStatus() != StatusVerificacao.APROVADO || !profissional.isAtivo()) return ResponseEntity.notFound().build();
         if (profissional.getFotoBanner() == null || profissional.getFotoBanner().length == 0)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok().header("X-Content-Type-Options", "nosniff").contentType(MediaType.IMAGE_PNG)

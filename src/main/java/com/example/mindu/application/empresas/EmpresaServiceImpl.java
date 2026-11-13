@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,7 @@ public class EmpresaServiceImpl implements EmpresaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plano não encontrado"));
 
         empresa.setPlano(plano);
+        empresa.setInicioVigenciaPlano(LocalDate.now());
         empresa.setSenha(passwordEncoder.encode(empresa.getSenha())); // RNF01 — nunca salvar senha em texto puro
         return repository.save(empresa);
     }

@@ -7,6 +7,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.math.BigDecimal;
+
 @SpringBootApplication
 public class MinduApplication {
 
@@ -17,12 +19,23 @@ public class MinduApplication {
 	@Bean
 	public CommandLineRunner seedPlanos(PlanoRepository repo) {
 		return args -> {
-			if (repo.count() == 0) {
-				repo.save(Plano.builder().nome("Plano Start").vagasTotais(30).porteIndicado("Pequeno").build());
-				repo.save(Plano.builder().nome("Plano Essencial").vagasTotais(100).porteIndicado("Médio").build());
-				repo.save(Plano.builder().nome("Plano Corporativo").vagasTotais(500).porteIndicado("Grande").build());
-			}
+			criarOuAtualizarPlano(repo, "Plano Start", 30, "Pequeno", "129.00");
+			criarOuAtualizarPlano(repo, "Plano Essencial", 100, "Médio", "109.00");
+			criarOuAtualizarPlano(repo, "Plano Corporativo", 500, "Grande", "89.00");
 		};
+	}
+
+	private void criarOuAtualizarPlano(PlanoRepository repo, String nome, int vagas,
+									 String porte, String preco) {
+		Plano plano = repo.findAll().stream()
+				.filter(item -> item.getNome().equalsIgnoreCase(nome))
+				.findFirst()
+				.orElseGet(() -> Plano.builder().nome(nome).vagasTotais(vagas).porteIndicado(porte).build());
+		plano.setVagasTotais(vagas);
+		plano.setPorteIndicado(porte);
+		plano.setPrecoMensalPorColaborador(new BigDecimal(preco));
+		plano.setConsultasSemLimite(true);
+		repo.save(plano);
 	}
 
 

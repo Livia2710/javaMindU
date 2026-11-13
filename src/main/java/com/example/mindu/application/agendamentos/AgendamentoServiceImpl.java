@@ -4,6 +4,7 @@ import com.example.mindu.domain.entity.Agendamento;
 import com.example.mindu.domain.entity.Cliente;
 import com.example.mindu.domain.entity.Profissional;
 import com.example.mindu.domain.enums.DiaSemana;
+import com.example.mindu.domain.enums.Modalidade;
 import com.example.mindu.domain.enums.StatusAgendamento;
 import com.example.mindu.domain.enums.StatusVerificacao;
 import com.example.mindu.domain.service.AgendamentoService;
@@ -45,6 +46,8 @@ public class AgendamentoServiceImpl implements AgendamentoService {
         Profissional profissional = profissionalRepository.findByIdForUpdate(profissionalId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
 
+        if (!profissional.isAtivo())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Profissional indisponível");
         if (profissional.getLocaisAtendimento().stream().noneMatch(l -> l.getModalidade() == modalidade))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Modalidade não oferecida pelo profissional");
         validarHorario(profissional, dataHora, null);
@@ -70,8 +73,7 @@ public class AgendamentoServiceImpl implements AgendamentoService {
     public Agendamento reagendar(String agendamentoId, LocalDateTime novaDataHora) {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
-        if (agendamento.getStatus() == StatusAgendamento.CANCELADO)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Agendamento cancelado não pode ser reagendado");
+        validarAgendamentoFuturoAtivo(agendamento);
 
         Profissional profissional = profissionalRepository.findByIdForUpdate(agendamento.getProfissional().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
@@ -80,10 +82,32 @@ public class AgendamentoServiceImpl implements AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
+    @Override
+    @Transactional
+    public Agendamento vincularLinkOnline(String agendamentoId, String linkOnline) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
+        validarAgendamentoFuturoAtivo(agendamento);
+        if (agendamento.getModalidade() == Modalidade.PRESENCIAL)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Link online só pode ser associado a atendimento virtual ou híbrido");
+        agendamento.setLinkOnline(linkOnline);
+        return agendamentoRepository.save(agendamento);
+    }
+
+    private void validarAgendamentoFuturoAtivo(Agendamento agendamento) {
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Somente agendamentos ativos podem ser alterados");
+        if (!LocalDateTime.now(ZoneId.of(fusoHorario)).isBefore(agendamento.getDataHora()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "O agendamento só pode ser alterado antes do horário de início");
+    }
+
     private void validarHorario(Profissional profissional, LocalDateTime dataHora, String agendamentoIgnorado) {
         if (!dataHora.isAfter(LocalDateTime.now(ZoneId.of(fusoHorario))))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O horário precisa estar no futuro");
-        if (profissional.getStatus() != StatusVerificacao.APROVADO)
+        if (profissional.getStatus() != StatusVerificacao.APROVADO || !profissional.isAtivo())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Profissional não está aprovado");
 
         boolean dentroDaDisponibilidade = profissional.getDisponibilidades().stream()
@@ -113,6 +137,7 @@ public class AgendamentoServiceImpl implements AgendamentoService {
     public Agendamento cancelar(String agendamentoId) {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
+        validarAgendamentoFuturoAtivo(agendamento);
         agendamento.setStatus(StatusAgendamento.CANCELADO);
         return agendamentoRepository.save(agendamento);
     }

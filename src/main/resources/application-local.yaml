@@ -1,0 +1,7 @@
+spring:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/manual/security-hardening.sql
+  jpa:
+    defer-datasource-initialization: true

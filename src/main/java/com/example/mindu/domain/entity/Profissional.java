@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -51,6 +52,8 @@ public class Profissional extends Usuario{
 
     @Column(columnDefinition = "bytea")
     private byte[] fotoCarterinha;
+
+    private LocalDateTime carteirinhaEnviadaEm;
 
     @Enumerated(EnumType.STRING)
     private StatusVerificacao status;

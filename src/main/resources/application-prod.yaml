@@ -14,10 +14,14 @@ spring:
     show-sql: false
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 10MB
+      max-file-size: 10MB
+      max-request-size: 12MB
 
 mindu:
+  mila:
+    url: ${MILA_API_URL}
+    api-key: ${MILA_API_KEY}
+    timeout-seconds: ${MILA_API_TIMEOUT_SECONDS:60}
   jwt:
     secret: ${MINDU_JWT_SECRET}
   criptografia:

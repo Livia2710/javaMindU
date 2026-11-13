@@ -34,6 +34,8 @@ public class ProfissionalSpecs {
 
     // RN06 — Cliente NUNCA deve ver Profissional não aprovado, mesmo sem filtro nenhum
     public static Specification<Profissional> aprovado() {
-        return (root, query, cb) -> cb.equal(root.get("status"), StatusVerificacao.APROVADO);
+        return (root, query, cb) -> cb.and(
+                cb.equal(root.get("status"), StatusVerificacao.APROVADO),
+                cb.isTrue(root.get("ativo")));
     }
 }

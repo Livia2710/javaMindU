@@ -6,6 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
+
 @Entity
 @Table
 @Data
@@ -49,4 +51,10 @@ public class Empresa extends Usuario {
     @ManyToOne
     @JoinColumn(name = "plano_id")
     private Plano plano;
+
+    private LocalDate inicioVigenciaPlano;
+
+    private LocalDate fimVigenciaPlano;
+
+    private Integer diaPagamento;
 }

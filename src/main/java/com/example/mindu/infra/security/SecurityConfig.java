@@ -38,13 +38,21 @@ public class SecurityConfig {
 
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/login", "/v1/planos", "/error", "/v1/empresas/validar-matricula").permitAll()
+                        .requestMatchers(
+                                "/v1/auth/login",
+                                "/v1/planos",
+                                "/error",
+                                "/v1/empresas/validar-matricula"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/clientes", "/v1/empresas", "/v1/profissionais").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/profissionais", "/v1/profissionais/*", "/v1/profissionais/*/foto", "/v1/profissionais/*/banner").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/profissionais/*/horarios-disponiveis").permitAll()
                         .requestMatchers("/v1/admin/**", "/v1/profissionais/*/aprovacao").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/profissionais/*/carteirinha").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.DELETE, "/v1/clientes/*").hasAnyRole("EMPRESA", "ADMIN")
+                        .requestMatchers("/v1/conta/**").hasAnyRole("CLIENTE", "EMPRESA", "PROFISSIONAL")
                         .requestMatchers("/v1/auth/me").authenticated()
+                        .requestMatchers("/v1/chat/**").hasAnyRole("CLIENTE", "PROFISSIONAL", "EMPRESA", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/v1/profissionais/conta/perfil").hasRole("PROFISSIONAL")
                         .requestMatchers("/v1/profissionais/*/locais", "/v1/profissionais/*/disponibilidade", "/v1/profissionais/*/perfil").hasAnyRole("PROFISSIONAL", "ADMIN")
                         .requestMatchers("/v1/empresas/me/**", "/v1/empresas/me").hasRole("EMPRESA")
@@ -59,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/agendamentos/meus").hasAnyRole("CLIENTE", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/v1/agendamentos/minha-agenda").hasRole("PROFISSIONAL")
                         .requestMatchers("/v1/agendamentos/*/cancelamento", "/v1/agendamentos/*/horario").hasAnyRole("CLIENTE", "PROFISSIONAL", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/agendamentos/*/link-online").hasAnyRole("PROFISSIONAL", "ADMIN")
                         .anyRequest().authenticated()
                 )
 

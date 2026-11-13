@@ -1,10 +1,8 @@
 package com.example.mindu.application.admin;
 
 import com.example.mindu.domain.entity.Cliente;
-import com.example.mindu.infra.repository.AgendamentoRepository;
 import com.example.mindu.infra.repository.ClienteRepository;
 import com.example.mindu.infra.repository.EmpresaRepository;
-import com.example.mindu.infra.repository.MatriculaRepository;
 import com.example.mindu.infra.repository.ProfissionalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,15 +17,14 @@ public class ExclusaoService {
     private final ClienteRepository clienteRepository;
     private final EmpresaRepository empresaRepository;
     private final ProfissionalRepository profissionalRepository;
-    private final MatriculaRepository matriculaRepository;
-    private final AgendamentoRepository agendamentoRepository;
 
     @Transactional
     public void excluirCliente(String id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
-        agendamentoRepository.deleteByClienteId(id);
-        clienteRepository.delete(cliente);
+        cliente.setAtivo(false);
+        cliente.setTokenVersion(cliente.getTokenVersion() + 1);
+        clienteRepository.save(cliente);
     }
 
     @Transactional
@@ -36,12 +33,11 @@ public class ExclusaoService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada");
         }
 
-        for (Cliente cliente : clienteRepository.findByEmpresaId(id)) {
-            agendamentoRepository.deleteByClienteId(cliente.getId());
-            clienteRepository.delete(cliente);
-        }
-        matriculaRepository.deleteByEmpresaId(id);
-        empresaRepository.deleteById(id);
+        empresaRepository.findById(id).ifPresent(empresa -> {
+            empresa.setAtivo(false);
+            empresa.setTokenVersion(empresa.getTokenVersion() + 1);
+            empresaRepository.save(empresa);
+        });
     }
 
     @Transactional
@@ -50,7 +46,10 @@ public class ExclusaoService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado");
         }
 
-        agendamentoRepository.deleteByProfissionalId(id);
-        profissionalRepository.deleteById(id);
+        profissionalRepository.findById(id).ifPresent(profissional -> {
+            profissional.setAtivo(false);
+            profissional.setTokenVersion(profissional.getTokenVersion() + 1);
+            profissionalRepository.save(profissional);
+        });
     }
 }

@@ -35,6 +35,9 @@ public class Agendamento {
     @Enumerated(EnumType.STRING)
     private Modalidade modalidade;
 
+    @Column(length = 2048)
+    private String linkOnline;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusAgendamento status;

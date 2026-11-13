@@ -15,6 +15,8 @@ public interface ProfissionalService {
 
     Profissional cadastrar(Profissional profissional); // RF07, RF10
 
+    Profissional reenviarCarteirinha(String id, byte[] fotoCarteirinha);
+
     Profissional aprovar(String id, boolean aprovado); // RF16
 
     Profissional buscarPorId(String id);

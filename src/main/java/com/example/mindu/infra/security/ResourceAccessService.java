@@ -79,6 +79,14 @@ public class ResourceAccessService {
         if (!dono) throw proibido("Agendamento não pertence à conta autenticada");
     }
 
+    public void exigirProfissionalDoAgendamento(String agendamentoId, String email) {
+        if (isAdmin()) return;
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
+        if (!agendamento.getProfissional().getEmail().equalsIgnoreCase(email))
+            throw proibido("Somente o profissional do atendimento pode definir o link da consulta");
+    }
+
     public boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));

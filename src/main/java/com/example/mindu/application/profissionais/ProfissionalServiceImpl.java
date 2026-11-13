@@ -50,8 +50,27 @@ public class ProfissionalServiceImpl implements ProfissionalService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
         }
 
+        if (profissional.getFotoCarterinha() == null || profissional.getFotoCarterinha().length == 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A foto da carteirinha é obrigatória");
+
         profissional.setSenha(passwordEncoder.encode(profissional.getSenha())); // RNF01
         profissional.setStatus(StatusVerificacao.PENDENTE); // RF10 — nasce pendente de aprovação
+        profissional.setCarteirinhaEnviadaEm(LocalDateTime.now());
+        return repository.save(profissional);
+    }
+
+    @Override
+    @Transactional
+    public Profissional reenviarCarteirinha(String id, byte[] fotoCarteirinha) {
+        Profissional profissional = buscarPorId(id);
+        if (profissional.getStatus() != StatusVerificacao.REJEITADO)
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "A carteirinha só pode ser reenviada depois de uma rejeição");
+        if (fotoCarteirinha == null || fotoCarteirinha.length == 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A foto da carteirinha é obrigatória");
+        profissional.setFotoCarterinha(fotoCarteirinha);
+        profissional.setCarteirinhaEnviadaEm(LocalDateTime.now());
+        profissional.setStatus(StatusVerificacao.PENDENTE);
         return repository.save(profissional);
     }
 
@@ -170,7 +189,7 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     @Transactional(readOnly = true)
     public List<LocalDateTime> horariosDisponiveis(String profissionalId, LocalDate data) {
         Profissional profissional = buscarPorId(profissionalId);
-        if (profissional.getStatus() != StatusVerificacao.APROVADO)
+        if (profissional.getStatus() != StatusVerificacao.APROVADO || !profissional.isAtivo())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado");
 
         DiaSemana dia = diaSemana(data.getDayOfWeek());

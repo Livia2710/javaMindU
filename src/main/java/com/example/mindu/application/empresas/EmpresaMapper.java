@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 @Component
 @RequiredArgsConstructor
@@ -56,6 +57,13 @@ public class EmpresaMapper {
                 .plano(empresa.getPlano().getNome())
                 .matriculasUsadas((int) usadas)
                 .matriculasDisponiveis(disponiveis)
+                .precoMensalPorColaborador(empresa.getPlano().getPrecoMensalPorColaborador())
+                .consultasSemLimite(empresa.getPlano().getConsultasSemLimite())
+                .valorMensalEstimado(empresa.getPlano().getPrecoMensalPorColaborador()
+                        .multiply(BigDecimal.valueOf(empresa.getPlano().getVagasTotais())))
+                .inicioVigenciaPlano(empresa.getInicioVigenciaPlano())
+                .fimVigenciaPlano(empresa.getFimVigenciaPlano())
+                .diaPagamento(empresa.getDiaPagamento())
                 .build();
     }
 

@@ -55,7 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         .or(() -> profissionalRepository.findByEmail(email).map(Usuario.class::cast))
                         .or(() -> adminRepository.findByEmail(email).map(Usuario.class::cast))
                         .orElse(null);
-                if (usuario != null && usuario.getTokenVersion() == tokenVersion) {
+                if (usuario != null && usuario.isAtivo() && usuario.getTokenVersion() == tokenVersion) {
                     String role = jwtService.extrairRole(token);
                     var auth = new UsernamePasswordAuthenticationToken(email, null,
                             List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)));

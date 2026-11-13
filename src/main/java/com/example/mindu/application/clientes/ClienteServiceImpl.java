@@ -136,7 +136,8 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional
     public void excluir(String id) {
         Cliente cliente = buscarPorId(id);
-        agendamentoRepository.deleteByClienteId(id);
-        clienteRepository.delete(cliente);
+        cliente.setAtivo(false);
+        cliente.setTokenVersion(cliente.getTokenVersion() + 1);
+        clienteRepository.save(cliente);
     }
 }

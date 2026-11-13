@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table
 @Data
@@ -24,4 +26,10 @@ public class Plano {
 
     @Column(nullable = false)
     private String porteIndicado;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoMensalPorColaborador;
+
+    @Column(nullable = false)
+    private Boolean consultasSemLimite;
 }
