@@ -14,7 +14,9 @@ public class AgendamentoMapper {
     public AgendamentoDTO toDTO(Agendamento agendamento) {
         return AgendamentoDTO.builder()
                 .id(agendamento.getId())
+                .clienteId(agendamento.getCliente().getId())
                 .clienteNome(agendamento.getCliente().getNome())
+                .profissionalId(agendamento.getProfissional().getId())
                 .profissionalNome(agendamento.getProfissional().getNome())
                 .dataHora(agendamento.getDataHora())
                 .modalidade(agendamento.getModalidade())

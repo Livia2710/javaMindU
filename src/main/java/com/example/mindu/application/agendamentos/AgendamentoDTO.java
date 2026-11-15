@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 @Builder
 public class AgendamentoDTO {
     private String id;
+    private String clienteId;
     private String clienteNome;
+    private String profissionalId;
     private String profissionalNome;
     private LocalDateTime dataHora;
     private Modalidade modalidade;

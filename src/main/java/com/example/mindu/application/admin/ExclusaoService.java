@@ -52,4 +52,37 @@ public class ExclusaoService {
             profissionalRepository.save(profissional);
         });
     }
+
+    @Transactional
+    public void reativarCliente(String id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+        if (!cliente.isAtivo()) {
+            cliente.setAtivo(true);
+            cliente.setTokenVersion(cliente.getTokenVersion() + 1);
+            clienteRepository.save(cliente);
+        }
+    }
+
+    @Transactional
+    public void reativarEmpresa(String id) {
+        var empresa = empresaRepository.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
+        if (!empresa.isAtivo()) {
+            empresa.setAtivo(true);
+            empresa.setTokenVersion(empresa.getTokenVersion() + 1);
+            empresaRepository.save(empresa);
+        }
+    }
+
+    @Transactional
+    public void reativarProfissional(String id) {
+        var profissional = profissionalRepository.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Profissional não encontrado"));
+        if (!profissional.isAtivo()) {
+            profissional.setAtivo(true);
+            profissional.setTokenVersion(profissional.getTokenVersion() + 1);
+            profissionalRepository.save(profissional);
+        }
+    }
 }

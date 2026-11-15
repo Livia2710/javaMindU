@@ -4,6 +4,7 @@ import com.example.mindu.domain.entity.Cliente;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ClienteRepository extends JpaRepository<Cliente, String> {
@@ -14,4 +15,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, String> {
     Optional<Cliente> findByEmail(String email);
 
     List<Cliente> findByEmpresaId(String empresaId);
+
+    List<Cliente> findByMatricula_IdIn(Collection<String> matriculaIds);
 }

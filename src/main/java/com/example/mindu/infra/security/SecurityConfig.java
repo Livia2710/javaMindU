@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/agendamentos/minha-agenda").hasRole("PROFISSIONAL")
                         .requestMatchers("/v1/agendamentos/*/cancelamento", "/v1/agendamentos/*/horario").hasAnyRole("CLIENTE", "PROFISSIONAL", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/v1/agendamentos/*/link-online").hasAnyRole("PROFISSIONAL", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/agendamentos/*/realizacao").hasAnyRole("PROFISSIONAL", "ADMIN")
                         .anyRequest().authenticated()
                 )
 

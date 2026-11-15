@@ -4,6 +4,8 @@ import com.example.mindu.domain.enums.StatusCadastroCliente;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class ClienteDTO {
@@ -20,4 +22,6 @@ public class ClienteDTO {
     private String estado;
     private String empresaId;
     private StatusCadastroCliente status;
+    private boolean ativo;
+    private LocalDateTime dataCadastro;
 }

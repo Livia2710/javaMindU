@@ -24,6 +24,7 @@ public class EmpresaDTO {
     private String cidade;
     private String estado;
     private String plano;
+    private boolean ativo;
     private int matriculasUsadas;
     private int matriculasDisponiveis;
     private BigDecimal precoMensalPorColaborador;

@@ -9,4 +9,5 @@ public interface AgendamentoService {
     Agendamento cancelar(String agendamentoId); // complementa o fluxo, não é RF explícito ainda
     Agendamento reagendar(String agendamentoId, LocalDateTime novaDataHora);
     Agendamento vincularLinkOnline(String agendamentoId, String linkOnline);
+    Agendamento marcarRealizado(String agendamentoId);
 }

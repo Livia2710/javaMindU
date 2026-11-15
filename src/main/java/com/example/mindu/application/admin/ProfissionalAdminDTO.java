@@ -8,11 +8,12 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 public record ProfissionalAdminDTO(String id, String nome, String email, TipoProfissional tipo,
-                                   List<String> tags, StatusVerificacao status,
+                                   List<String> tags, StatusVerificacao status, boolean ativo,
                                    LocalDateTime carteirinhaEnviadaEm, LocalDateTime prazoVerificacaoAte) {
     public static ProfissionalAdminDTO from(Profissional profissional) {
         return new ProfissionalAdminDTO(profissional.getId(), profissional.getNome(),
                 profissional.getEmail(), profissional.getTipo(), profissional.getTags(), profissional.getStatus(),
+                profissional.isAtivo(),
                 profissional.getCarteirinhaEnviadaEm(), profissional.getCarteirinhaEnviadaEm() == null
                         ? null : profissional.getCarteirinhaEnviadaEm().plusHours(72));
     }

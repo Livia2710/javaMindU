@@ -95,6 +95,18 @@ public class AgendamentoServiceImpl implements AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
+    @Override
+    @Transactional
+    public Agendamento marcarRealizado(String agendamentoId) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Somente agendamentos ativos podem ser marcados como realizados");
+        agendamento.setStatus(StatusAgendamento.REALIZADO);
+        return agendamentoRepository.save(agendamento);
+    }
+
     private void validarAgendamentoFuturoAtivo(Agendamento agendamento) {
         if (agendamento.getStatus() != StatusAgendamento.AGENDADO)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

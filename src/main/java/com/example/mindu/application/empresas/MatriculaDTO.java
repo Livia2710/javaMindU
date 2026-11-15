@@ -9,4 +9,6 @@ public class MatriculaDTO {
     private String id;
     private String codigo;
     private boolean utilizada;
+    private String beneficiarioId;
+    private String beneficiarioNome;
 }

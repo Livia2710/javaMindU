@@ -29,6 +29,9 @@ public class ProfissionalMapper {
                 .bio(profissional.getBio())
                 .tipo(profissional.getTipo())
                 .tags(profissional.getTags())
+                .modalidades(profissional.getLocaisAtendimento() == null ? List.of()
+                        : profissional.getLocaisAtendimento().stream()
+                                .map(LocalAtendimento::getModalidade).distinct().toList())
                 .status(profissional.getStatus())
                 .build();
     }

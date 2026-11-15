@@ -2,12 +2,17 @@ package com.example.mindu.application.empresas;
 
 import com.example.mindu.domain.entity.Empresa;
 import com.example.mindu.domain.entity.Matricula;
+import com.example.mindu.domain.entity.Cliente;
 import com.example.mindu.infra.repository.MatriculaRepository;
+import com.example.mindu.infra.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.math.BigDecimal;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -16,6 +21,7 @@ public class EmpresaMapper {
     // Precisa do MatriculaRepository só pra calcular matriculasUsadas/disponiveis
     // na hora de montar o EmpresaDTO — não guarda estado, só consulta.
     private final MatriculaRepository matriculaRepository;
+    private final ClienteRepository clienteRepository;
 
     // DTO de entrada → Entidade. Note que NÃO seta o Plano aqui — o Service
     // é quem busca o Plano pelo planoId e associa, porque o mapper não deveria
@@ -55,6 +61,7 @@ public class EmpresaMapper {
                 .cep(empresa.getCep()).logradouro(empresa.getLogradouro()).numero(empresa.getNumero())
                 .complemento(empresa.getComplemento()).bairro(empresa.getBairro()).cidade(empresa.getCidade()).estado(empresa.getEstado())
                 .plano(empresa.getPlano().getNome())
+                .ativo(empresa.isAtivo())
                 .matriculasUsadas((int) usadas)
                 .matriculasDisponiveis(disponiveis)
                 .precoMensalPorColaborador(empresa.getPlano().getPrecoMensalPorColaborador())
@@ -68,12 +75,21 @@ public class EmpresaMapper {
     }
 
     public List<MatriculaDTO> toMatriculaDTOList(List<Matricula> matriculas) {
+        if (matriculas.isEmpty()) return List.of();
+        Map<String, Cliente> beneficiarios = clienteRepository.findByMatricula_IdIn(
+                        matriculas.stream().map(Matricula::getId).toList())
+                .stream().collect(Collectors.toMap(c -> c.getMatricula().getId(), Function.identity()));
         return matriculas.stream()
-                .map(m -> MatriculaDTO.builder()
-                        .id(m.getId())
-                        .codigo(m.getCodigo())
-                        .utilizada(m.isUtilizada())
-                        .build())
+                .map(m -> {
+                    Cliente beneficiario = beneficiarios.get(m.getId());
+                    return MatriculaDTO.builder()
+                            .id(m.getId())
+                            .codigo(m.getCodigo())
+                            .utilizada(m.isUtilizada())
+                            .beneficiarioId(beneficiario == null ? null : beneficiario.getId())
+                            .beneficiarioNome(beneficiario == null ? null : beneficiario.getNome())
+                            .build();
+                })
                 .toList();
     }
 }
