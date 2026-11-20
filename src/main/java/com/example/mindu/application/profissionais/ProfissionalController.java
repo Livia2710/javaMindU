@@ -16,7 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/v1/profissionais")
@@ -49,8 +51,6 @@ public class ProfissionalController {
         return ResponseEntity.ok(mapper.toDTO(service.reenviarCarteirinha(id, imagem)));
     }
 
-    // RF16 — só o Admin deveria poder chamar isso (hoje ainda não há restrição de
-    // role de verdade no SecurityConfig — é a lacuna do TipoUsuario que comentei antes)
     @PatchMapping("/{id}/aprovacao")
     public ResponseEntity<ProfissionalDTO> aprovar(@PathVariable String id, @RequestParam boolean aprovado) {
         return ResponseEntity.ok(mapper.toDTO(service.aprovar(id, aprovado)));
@@ -91,7 +91,7 @@ public class ProfissionalController {
                 fotoBanner == null ? null : "image/png")));
     }
 
-    @GetMapping("/conta/perfil")
+    @GetMapping({"/conta/perfil", "/me"})
     public ResponseEntity<ProfissionalDTO> meuPerfil(@AuthenticationPrincipal String email) {
         String id = access.profissionalIdDoUsuario(email);
         return ResponseEntity.ok(mapper.toDTO(service.buscarPorId(id)));
@@ -110,6 +110,14 @@ public class ProfissionalController {
         return ResponseEntity.ok(mapper.toDetalheDTO(profissional));
     }
 
+    @GetMapping("/{id}/horarios-disponiveis")
+    public ResponseEntity<List<java.time.LocalDateTime>> consultarHorariosDisponiveis(
+            @PathVariable String id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+        return ResponseEntity.ok(service.horariosDisponiveis(id, data));
+    }
+
+    // Obsoleta: continua funcionando para compatibilidade; novos consumidores devem usar a alternativa GET acima.
     @PostMapping("/{id}/horarios-disponiveis")
     public ResponseEntity<List<java.time.LocalDateTime>> horariosDisponiveis(
             @PathVariable String id, @RequestBody @Valid ConsultaHorariosDTO consulta) {

@@ -51,8 +51,10 @@ public class SecurityConfig {
                                 "/v1/empresas/validar-matricula"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/clientes", "/v1/empresas", "/v1/profissionais").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/profissionais/me").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.GET, "/v1/profissionais", "/v1/profissionais/*", "/v1/profissionais/*/foto", "/v1/profissionais/*/banner").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/profissionais/*/horarios-disponiveis").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/profissionais/*/horarios-disponiveis").permitAll()
                         .requestMatchers("/v1/admin/**", "/v1/profissionais/*/aprovacao").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/v1/profissionais/*/carteirinha").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.DELETE, "/v1/clientes/*").hasAnyRole("EMPRESA", "ADMIN")
