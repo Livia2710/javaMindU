@@ -17,6 +17,7 @@ import org.springframework.web.cors.*;
 import org.springframework.beans.factory.annotation.Value ;
 import java.util.List;
 import java.io.IOException;
+import java.time.Duration;
 
 @Configuration
 @RequiredArgsConstructor
@@ -103,7 +104,11 @@ public class SecurityConfig {
         CorsConfiguration c = new CorsConfiguration();
         c.setAllowedOrigins(origens);
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        c.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        c.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        c.setExposedHeaders(List.of("X-Total-Count", "X-Page", "X-Page-Size", "X-Total-Pages", "Retry-After"));
+        c.setMaxAge(Duration.ofHours(1));
+        // O Android nativo (Retrofit/OkHttp) não envia Origin e não depende de CORS;
+        // CORS é uma restrição aplicada pelos navegadores, portanto 10.0.2.2 não é origem.
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", c);
         return src;
