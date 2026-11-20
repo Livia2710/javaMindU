@@ -25,15 +25,19 @@ services:
       - db
 
   mila:
+    profiles: [mila]
     build:
-      context: ../../Projetos/Mila
+      context: ${MILA_BUILD_CONTEXT:-./mila}
       dockerfile: Dockerfile
       target: api
+    env_file:
+      - path: ${MILA_ENV_FILE:-./mila.env}
+        required: false
     restart: unless-stopped
     ports:
       - '8000:8000'
     environment:
-      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
       MILA_API_KEY: ${MILA_API_KEY:-}
       APP_ENV: ${APP_ENV:-development}
       GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
