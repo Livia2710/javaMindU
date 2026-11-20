@@ -40,7 +40,8 @@ public class LoginRateLimitInterceptor implements HandlerInterceptor {
         response.setStatus(429);
         response.setHeader("Retry-After", Long.toString(retryAfter));
         response.setContentType("application/json");
-        response.getWriter().write("{\"erro\":\"Muitas tentativas. Tente novamente em instantes.\"}");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"erro\":\"Muitas tentativas. Tente novamente em instantes.\",\"status\":429}");
         return false;
     }
     private static final class Window {

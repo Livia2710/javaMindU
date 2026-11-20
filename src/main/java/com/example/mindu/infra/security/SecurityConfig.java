@@ -1,6 +1,7 @@
 package com.example.mindu.infra.security;
 
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -11,11 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.config.Customizer;
 import org.springframework.web.cors.*;
 import org.springframework.beans.factory.annotation.Value ;
 import java.util.List;
+import java.io.IOException;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,7 +37,11 @@ public class SecurityConfig {
                 // autentica sozinha via token (é o JwtFilter que faz isso acima).
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint((request, response, exception) -> escreverErro(
+                                response, HttpStatus.UNAUTHORIZED, "Não autenticado ou token inválido/expirado"))
+                        .accessDeniedHandler((request, response, exception) -> escreverErro(
+                                response, HttpStatus.FORBIDDEN, "Sem permissão para este recurso")))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v1/auth/login",
@@ -84,6 +89,13 @@ public class SecurityConfig {
         // RNF01 — nunca salvar senha em texto puro. BCrypt gera um hash com
         // "salt" embutido automaticamente (duas senhas iguais geram hashes diferentes).
         return new BCryptPasswordEncoder();
+    }
+
+    private void escreverErro(HttpServletResponse response, HttpStatus status, String mensagem) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"erro\":\"" + mensagem + "\",\"status\":" + status.value() + "}");
     }
 
     @Bean
