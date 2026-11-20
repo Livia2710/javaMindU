@@ -3,6 +3,7 @@ package com.example.mindu.application.clientes;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.example.mindu.domain.util.EmailNormalizer;
 import lombok.Data;
 
 @Data
@@ -14,6 +15,10 @@ public class ClienteCadastroDTO {
     @NotBlank
     @Email
     private String email;
+
+    public void setEmail(String email) {
+        this.email = EmailNormalizer.normalizar(email);
+    }
 
     @NotBlank
     @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")

@@ -4,6 +4,7 @@ import com.example.mindu.domain.entity.Disponibilidade;
 import com.example.mindu.domain.entity.LocalAtendimento;
 import com.example.mindu.domain.entity.Profissional;
 import com.example.mindu.domain.entity.Agendamento;
+import com.example.mindu.domain.util.EmailNormalizer;
 import com.example.mindu.domain.enums.Modalidade;
 import com.example.mindu.domain.enums.StatusVerificacao;
 import com.example.mindu.domain.service.ProfissionalService;
@@ -44,6 +45,7 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     @Override
     @Transactional
     public Profissional cadastrar(Profissional profissional) {
+        profissional.setEmail(EmailNormalizer.normalizar(profissional.getEmail()));
         // RF07 — e-mail não pode duplicar (o unique=true da coluna já garantiria,
         // mas isso dá um 409 amigável em vez de estourar erro cru do banco)
         if (repository.existsByEmail(profissional.getEmail())) {
@@ -86,7 +88,7 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     @Transactional
     public Profissional atualizarDados(String id, ProfissionalPerfilDTO dto) {
         Profissional p = buscarPorId(id);
-        if (dto.getNome()!=null) p.setNome(dto.getNome()); if (dto.getEmail()!=null) p.setEmail(dto.getEmail());
+        if (dto.getNome()!=null) p.setNome(dto.getNome()); if (dto.getEmail()!=null) p.setEmail(EmailNormalizer.normalizar(dto.getEmail()));
         if (dto.getTelefone()!=null) p.setTelefone(dto.getTelefone()); if (dto.getBio()!=null) p.setBio(dto.getBio());
         if (dto.getTipo()!=null) p.setTipo(dto.getTipo()); if (dto.getTags()!=null) p.setTags(dto.getTags());
         return repository.save(p);

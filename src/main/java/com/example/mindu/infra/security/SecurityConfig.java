@@ -1,6 +1,7 @@
 package com.example.mindu.infra.security;
 
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -11,11 +12,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.config.Customizer;
 import org.springframework.web.cors.*;
 import org.springframework.beans.factory.annotation.Value ;
 import java.util.List;
+import java.io.IOException;
+import java.time.Duration;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,7 +38,11 @@ public class SecurityConfig {
                 // autentica sozinha via token (é o JwtFilter que faz isso acima).
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint((request, response, exception) -> escreverErro(
+                                response, HttpStatus.UNAUTHORIZED, "Não autenticado ou token inválido/expirado"))
+                        .accessDeniedHandler((request, response, exception) -> escreverErro(
+                                response, HttpStatus.FORBIDDEN, "Sem permissão para este recurso")))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v1/auth/login",
@@ -45,8 +51,10 @@ public class SecurityConfig {
                                 "/v1/empresas/validar-matricula"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/clientes", "/v1/empresas", "/v1/profissionais").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/profissionais/me").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.GET, "/v1/profissionais", "/v1/profissionais/*", "/v1/profissionais/*/foto", "/v1/profissionais/*/banner").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/profissionais/*/horarios-disponiveis").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/profissionais/*/horarios-disponiveis").permitAll()
                         .requestMatchers("/v1/admin/**", "/v1/profissionais/*/aprovacao").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/v1/profissionais/*/carteirinha").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.DELETE, "/v1/clientes/*").hasAnyRole("EMPRESA", "ADMIN")
@@ -86,12 +94,23 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    private void escreverErro(HttpServletResponse response, HttpStatus status, String mensagem) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"erro\":\"" + mensagem + "\",\"status\":" + status.value() + "}");
+    }
+
     @Bean
     CorsConfigurationSource corsConfigurationSource(@Value("${mindu.cors.origens}") List<String> origens) {
         CorsConfiguration c = new CorsConfiguration();
         c.setAllowedOrigins(origens);
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        c.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        c.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        c.setExposedHeaders(List.of("X-Total-Count", "X-Page", "X-Page-Size", "X-Total-Pages", "Retry-After"));
+        c.setMaxAge(Duration.ofHours(1));
+        // O Android nativo (Retrofit/OkHttp) não envia Origin e não depende de CORS;
+        // CORS é uma restrição aplicada pelos navegadores, portanto 10.0.2.2 não é origem.
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", c);
         return src;

@@ -78,7 +78,7 @@ public class EmpresaController {
             @RequestParam int quantidade, @AuthenticationPrincipal String email) {
         String id = access.empresaIdDoUsuario(email);
         var matriculas = service.gerarMatriculas(id, quantidade);
-        return ResponseEntity.ok(mapper.toMatriculaDTOList(matriculas));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toMatriculaDTOList(matriculas));
     }
 
     @GetMapping("/me/matriculas")
@@ -92,7 +92,7 @@ public class EmpresaController {
             @PathVariable String id, @RequestParam int quantidade, @AuthenticationPrincipal String email) {
         access.exigirEmpresaDona(id, email);
         var matriculas = service.gerarMatriculas(id, quantidade); // RN09 validado dentro do Service
-        return ResponseEntity.ok(mapper.toMatriculaDTOList(matriculas));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toMatriculaDTOList(matriculas));
     }
 
     @GetMapping("/{id}/matriculas")

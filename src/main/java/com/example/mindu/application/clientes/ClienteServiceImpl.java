@@ -4,6 +4,7 @@ import com.example.mindu.domain.entity.Cliente;
 import com.example.mindu.domain.entity.Empresa;
 import com.example.mindu.domain.entity.Matricula;
 import com.example.mindu.domain.enums.StatusCadastroCliente;
+import com.example.mindu.domain.util.EmailNormalizer;
 import com.example.mindu.domain.service.ClienteService;
 import com.example.mindu.infra.repository.ClienteRepository;
 import com.example.mindu.infra.repository.EmpresaRepository;
@@ -32,6 +33,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public Cliente cadastrar(String nome, String email, String senha, String empresaId, String codigoMatricula) {
+        email = EmailNormalizer.normalizar(email);
         // RN01 — e-mail não pode se repetir
         if (clienteRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
@@ -98,7 +100,7 @@ public class ClienteServiceImpl implements ClienteService {
     public Cliente atualizarPerfil(String id, ClientePerfilDTO dto) {
         Cliente c = buscarPorId(id);
         if (dto.getNome() != null) c.setNome(dto.getNome());
-        if (dto.getEmail() != null) c.setEmail(dto.getEmail());
+        if (dto.getEmail() != null) c.setEmail(EmailNormalizer.normalizar(dto.getEmail()));
         if (dto.getTelefone() != null) c.setTelefone(dto.getTelefone());
         if (dto.getCep() != null) c.setCep(dto.getCep());
         if (dto.getLogradouro() != null) c.setLogradouro(dto.getLogradouro());

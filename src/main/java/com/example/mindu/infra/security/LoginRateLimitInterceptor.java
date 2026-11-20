@@ -8,11 +8,13 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 @Component
 public class LoginRateLimitInterceptor implements HandlerInterceptor {
-    private static final int LIMIT = 10;
     private static final long WINDOW_MS = 60_000;
     private static final int MAX_IPS = 5_000;
+    @Value("${mindu.login.limite-por-minuto:10}")
+    private int limitePorMinuto;
     private final LinkedHashMap<String, Window> windows = new LinkedHashMap<>(64, .75f, true);
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
@@ -30,7 +32,7 @@ public class LoginRateLimitInterceptor implements HandlerInterceptor {
                 window = new Window(now);
                 windows.put(ip, window);
             }
-            if (window.attempts >= LIMIT)
+            if (window.attempts >= limitePorMinuto)
                 return reject(response, Math.max(1, (window.startedAt + WINDOW_MS - now + 999) / 1000));
             window.attempts++;
             return true;
@@ -40,7 +42,8 @@ public class LoginRateLimitInterceptor implements HandlerInterceptor {
         response.setStatus(429);
         response.setHeader("Retry-After", Long.toString(retryAfter));
         response.setContentType("application/json");
-        response.getWriter().write("{\"erro\":\"Muitas tentativas. Tente novamente em instantes.\"}");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"erro\":\"Muitas tentativas. Tente novamente em instantes.\",\"status\":429}");
         return false;
     }
     private static final class Window {

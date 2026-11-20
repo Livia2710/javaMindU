@@ -27,19 +27,23 @@ services:
       MINDU_JWT_SECRET: local-dev-jwt-key-change-this-before-sharing-123456
       MINDU_CRIPTOGRAFIA_CHAVE: mindu-chave-16ch
       MINDU_ADMIN_SENHA: ${MINDU_ADMIN_SENHA:?Crie .env com MINDU_ADMIN_SENHA antes de iniciar}
+      MINDU_LOGIN_LIMITE_POR_MINUTO: ${MINDU_LOGIN_LIMITE_POR_MINUTO:-10}
       MILA_API_URL: http://mila:8000
       MILA_API_KEY: ${MILA_API_KEY:-}
+      CORS_ORIGENS: ${CORS_ORIGENS:-http://localhost:5173,http://localhost:3000,https://mind-u-pi.vercel.app}
     depends_on:
       db:
         condition: service_healthy
 
   mila:
+    profiles: [mila]
     build:
-      context: ${MILA_BUILD_CONTEXT:-../../Projetos/Mila}
+      context: ${MILA_BUILD_CONTEXT:-./mila}
       dockerfile: Dockerfile
       target: api
     env_file:
-      - ${MILA_ENV_FILE:-../../Projetos/Mila/.env}
+      - path: ${MILA_ENV_FILE:-./mila.env}
+        required: false
     restart: unless-stopped
     environment:
       APP_ENV: development
@@ -66,9 +70,9 @@ services:
         condition: service_started
 
   mila-ui:
-    profiles: [lab]
+    profiles: [mila, lab]
     build:
-      context: ${MILA_BUILD_CONTEXT:-../../Projetos/Mila}
+      context: ${MILA_BUILD_CONTEXT:-./mila}
       dockerfile: Dockerfile
       target: ui
     command: ["streamlit", "run", "tools/ui.py", "--server.address", "0.0.0.0", "--server.port", "8501"]

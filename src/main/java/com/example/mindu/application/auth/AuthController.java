@@ -6,6 +6,7 @@ import com.example.mindu.infra.repository.ClienteRepository;
 import com.example.mindu.infra.repository.EmpresaRepository;
 import com.example.mindu.infra.repository.ProfissionalRepository;
 import com.example.mindu.infra.security.JwtService;
+import com.example.mindu.domain.util.EmailNormalizer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,15 +39,15 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {
 
         // Um helper que tenta os 4
-        Usuario usuario = buscarPorEmail(dto.getEmail())
+        Usuario usuario = buscarPorEmail(EmailNormalizer.normalizar(dto.getEmail()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas"));
-
-        if (!usuario.isAtivo())
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta desativada. Procure o suporte do MindU.");
 
         if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
         }
+
+        if (!usuario.isAtivo())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta desativada. Procure o suporte do MindU.");
 
         String tipo = tipoConta(usuario);
         String token = jwtService.gerarToken(usuario.getEmail(), tipo, usuario.getTokenVersion());
@@ -94,6 +95,7 @@ public class AuthController {
     // pra pegar senha/tentativasLogin/bloqueadoAte o tipo Usuario já basta.
     // Testa um repository de cada vez, na ordem, e para no primeiro que achar.
     private Optional<Usuario> buscarPorEmail(String email) {
+        email = EmailNormalizer.normalizar(email);
         Optional<Usuario> cliente = clienteRepository.findByEmail(email).map(Usuario.class::cast);
         if (cliente.isPresent()) return cliente;
 

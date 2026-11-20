@@ -37,8 +37,10 @@ public abstract class Usuario {
 
     @Column(nullable = false)
     @Builder.Default
+    // Reservado para um futuro bloqueio de conta após tentativas inválidas.
     private int tentativasLogin = 0;
 
+    // Reservado para um futuro bloqueio de conta após tentativas inválidas.
     private LocalDateTime bloqueadoAte;
 
     @Column(nullable = false)
