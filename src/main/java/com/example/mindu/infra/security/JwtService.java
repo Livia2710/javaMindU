@@ -2,6 +2,7 @@ package com.example.mindu.infra.security;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -48,25 +49,28 @@ public class JwtService {
     // Faz o caminho inverso: pega o token, verifica a assinatura (se alguém mexeu
     // no token, a verificação falha e lança exceção), e devolve o email de dentro dele.
     public String extrairEmail(String token) {
-        return Jwts.parser().verifyWith(getKey()).build()
-                .parseSignedClaims(token).getPayload().getSubject();
+        return parsearClaims(token).getSubject();
     }
 
     public int extrairTokenVersion(String token) {
-        return Jwts.parser().verifyWith(getKey()).build()
-                .parseSignedClaims(token).getPayload().get("ver", Integer.class);
+        return parsearClaims(token).get("ver", Integer.class);
     }
 
     public String extrairRole(String token) {
+        return parsearClaims(token).get("role", String.class);
+    }
+
+    /** Valida assinatura e expiração uma vez e devolve as claims verificadas. */
+    public Claims parsearClaims(String token) {
         return Jwts.parser().verifyWith(getKey()).build()
-                .parseSignedClaims(token).getPayload().get("role", String.class);
+                .parseSignedClaims(token).getPayload();
     }
 
     // Só checa se o token é válido (assinatura correta + não expirado), sem
     // precisar do email — usado pelo JwtFilter antes de confiar no token.
     public boolean tokenValido(String token) {
         try {
-            Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token);
+            parsearClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             // JwtException cobre: assinatura inválida, token expirado, malformado...

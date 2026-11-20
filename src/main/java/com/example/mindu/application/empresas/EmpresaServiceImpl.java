@@ -3,6 +3,7 @@ package com.example.mindu.application.empresas;
 import com.example.mindu.domain.entity.Empresa;
 import com.example.mindu.domain.entity.Matricula;
 import com.example.mindu.domain.entity.Plano;
+import com.example.mindu.domain.util.EmailNormalizer;
 import com.example.mindu.domain.service.EmpresaService;
 import com.example.mindu.infra.repository.EmpresaRepository;
 import com.example.mindu.infra.repository.MatriculaRepository;
@@ -31,6 +32,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     @Override
     @Transactional
     public Empresa cadastrar(Empresa empresa, String planoId) {
+        empresa.setEmail(EmailNormalizer.normalizar(empresa.getEmail()));
         // RN02 — CNPJ não pode se repetir
         if (repository.existsByCnpj(empresa.getCnpj())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CNPJ já cadastrado");
@@ -52,7 +54,7 @@ public class EmpresaServiceImpl implements EmpresaService {
         Empresa e = buscarPorId(id);
         if (dto.getNomeFantasia()!=null) e.setNomeFantasia(dto.getNomeFantasia());
         if (dto.getResponsavel()!=null) e.setResponsavel(dto.getResponsavel());
-        if (dto.getEmail()!=null) e.setEmail(dto.getEmail());
+        if (dto.getEmail()!=null) e.setEmail(EmailNormalizer.normalizar(dto.getEmail()));
         if (dto.getTelefone()!=null) e.setTelefone(dto.getTelefone());
         if (dto.getCep()!=null) e.setCep(dto.getCep()); if (dto.getLogradouro()!=null) e.setLogradouro(dto.getLogradouro());
         if (dto.getNumero()!=null) e.setNumero(dto.getNumero()); if (dto.getComplemento()!=null) e.setComplemento(dto.getComplemento());

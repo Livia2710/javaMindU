@@ -26,3 +26,7 @@ mindu:
     secret: ${MINDU_JWT_SECRET}
   criptografia:
     chave: ${MINDU_CRIPTOGRAFIA_CHAVE}
+server:
+  # O container fica atrás do proxy do Render; o servidor resolve os headers
+  # encaminhados apenas quando a conexão vem de um proxy confiável.
+  forward-headers-strategy: native

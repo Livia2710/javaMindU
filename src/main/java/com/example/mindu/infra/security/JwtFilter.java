@@ -6,12 +6,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import com.example.mindu.domain.entity.Usuario;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Claims;
+import com.example.mindu.domain.util.EmailNormalizer;
 import com.example.mindu.infra.repository.ClienteRepository;
 import com.example.mindu.infra.repository.EmpresaRepository;
 import com.example.mindu.infra.repository.ProfissionalRepository;
 import com.example.mindu.infra.repository.AdminRepository;
-import java.util.Optional;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -46,24 +46,39 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = header.substring(7); // remove os 7 caracteres de "Bearer " e sobra só o token
 
+        Claims claims;
+        String emailClaim;
+        String role;
+        Integer tokenVersionClaim;
         try {
-            if (jwtService.tokenValido(token)) {
-                String email = jwtService.extrairEmail(token);
-                int tokenVersion = jwtService.extrairTokenVersion(token);
-                Usuario usuario = clienteRepository.findByEmail(email).map(Usuario.class::cast)
-                        .or(() -> empresaRepository.findByEmail(email).map(Usuario.class::cast))
-                        .or(() -> profissionalRepository.findByEmail(email).map(Usuario.class::cast))
-                        .or(() -> adminRepository.findByEmail(email).map(Usuario.class::cast))
-                        .orElse(null);
-                if (usuario != null && usuario.isAtivo() && usuario.getTokenVersion() == tokenVersion) {
-                    String role = jwtService.extrairRole(token);
-                    var auth = new UsernamePasswordAuthenticationToken(email, null,
-                            List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-            }
-        } catch (JwtException | IllegalArgumentException ignored) {
+            claims = jwtService.parsearClaims(token);
+            emailClaim = claims.getSubject();
+            role = claims.get("role", String.class);
+            tokenVersionClaim = claims.get("ver", Integer.class);
+        } catch (RuntimeException ignored) {
             SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (emailClaim == null || emailClaim.isBlank() || role == null || role.isBlank()
+                || tokenVersionClaim == null) {
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String email = EmailNormalizer.normalizar(emailClaim);
+        int tokenVersion = tokenVersionClaim;
+        Usuario usuario = clienteRepository.findByEmail(email).map(Usuario.class::cast)
+                .or(() -> empresaRepository.findByEmail(email).map(Usuario.class::cast))
+                .or(() -> profissionalRepository.findByEmail(email).map(Usuario.class::cast))
+                .or(() -> adminRepository.findByEmail(email).map(Usuario.class::cast))
+                .orElse(null);
+        if (usuario != null && usuario.isAtivo() && usuario.getTokenVersion() == tokenVersion) {
+            var auth = new UsernamePasswordAuthenticationToken(email, null,
+                    List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)));
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
         // Se o token for inválido, simplesmente não autentica ninguém — a requisição
         // segue "anônima", e cai na regra do SecurityConfig (que vai barrar com 401

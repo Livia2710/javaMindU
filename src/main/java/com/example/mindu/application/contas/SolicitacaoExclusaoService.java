@@ -1,6 +1,7 @@
 package com.example.mindu.application.contas;
 
 import com.example.mindu.domain.entity.*;
+import com.example.mindu.domain.util.EmailNormalizer;
 import com.example.mindu.infra.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ public class SolicitacaoExclusaoService {
 
     @Transactional
     public SolicitacaoExclusaoDTO solicitar(String email) {
+        email = EmailNormalizer.normalizar(email);
         Usuario usuario = buscarPorEmail(email).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada"));
         if (usuario instanceof Admin) {
@@ -65,10 +67,11 @@ public class SolicitacaoExclusaoService {
     }
 
     private Optional<Usuario> buscarPorEmail(String email) {
-        return clienteRepository.findByEmail(email).map(Usuario.class::cast)
-                .or(() -> empresaRepository.findByEmail(email).map(Usuario.class::cast))
-                .or(() -> profissionalRepository.findByEmail(email).map(Usuario.class::cast))
-                .or(() -> adminRepository.findByEmail(email).map(Usuario.class::cast));
+        String emailNormalizado = EmailNormalizer.normalizar(email);
+        return clienteRepository.findByEmail(emailNormalizado).map(Usuario.class::cast)
+                .or(() -> empresaRepository.findByEmail(emailNormalizado).map(Usuario.class::cast))
+                .or(() -> profissionalRepository.findByEmail(emailNormalizado).map(Usuario.class::cast))
+                .or(() -> adminRepository.findByEmail(emailNormalizado).map(Usuario.class::cast));
     }
 
     private String tipoConta(Usuario usuario) {

@@ -22,6 +22,8 @@ spring:
       max-request-size: 12MB
 
 mindu:
+  login:
+    limite-por-minuto: ${MINDU_LOGIN_LIMITE_POR_MINUTO:10}
   agendamento:
     duracao-minutos: ${MINDU_AGENDAMENTO_DURACAO_MINUTOS:50}
     fuso-horario: ${MINDU_AGENDAMENTO_FUSO_HORARIO:America/Sao_Paulo}

@@ -3,6 +3,7 @@ package com.example.mindu.application.empresas;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.example.mindu.domain.util.EmailNormalizer;
 import lombok.Data;
 
 @Data
@@ -37,6 +38,10 @@ public class EmpresaCadastroDTO {
     @NotBlank
     @Email
     private String email;
+
+    public void setEmail(String email) {
+        this.email = EmailNormalizer.normalizar(email);
+    }
     private String telefone;
 
     @NotBlank

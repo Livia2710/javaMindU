@@ -2,6 +2,19 @@
 -- As operações são idempotentes para que possam rodar a cada inicialização.
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE usuario ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
+-- Normaliza e-mails sem escolher uma conta quando dois registros colidem.
+-- Em caso de colisão após trim/lower, todas as linhas daquele grupo ficam intactas
+-- para análise manual; nenhum usuário é removido.
+UPDATE usuario AS u
+   SET email = lower(btrim(u.email, ' ' || chr(9) || chr(10) || chr(11) || chr(12) || chr(13)))
+ WHERE u.email <> lower(btrim(u.email, ' ' || chr(9) || chr(10) || chr(11) || chr(12) || chr(13)))
+   AND NOT EXISTS (
+       SELECT 1
+         FROM usuario AS outro
+        WHERE outro.id <> u.id
+          AND lower(btrim(outro.email, ' ' || chr(9) || chr(10) || chr(11) || chr(12) || chr(13)))
+              = lower(btrim(u.email, ' ' || chr(9) || chr(10) || chr(11) || chr(12) || chr(13)))
+   );
 ALTER TABLE cliente ADD COLUMN IF NOT EXISTS cep VARCHAR(255);
 ALTER TABLE cliente ADD COLUMN IF NOT EXISTS logradouro VARCHAR(255);
 ALTER TABLE cliente ADD COLUMN IF NOT EXISTS numero VARCHAR(255);
