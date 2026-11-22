@@ -34,6 +34,19 @@ public class AuthController {
 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RecuperacaoSenhaService recuperacaoSenhaService;
+
+    @PostMapping("/esqueci-senha")
+    public ResponseEntity<Map<String, String>> solicitarRecuperacao(
+            @RequestBody @Valid SolicitarRecuperacaoSenhaDTO dto) {
+        return ResponseEntity.ok(recuperacaoSenhaService.solicitar(dto.getEmail()));
+    }
+
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<Void> redefinirSenha(@RequestBody @Valid RedefinirSenhaDTO dto) {
+        recuperacaoSenhaService.redefinir(dto.getToken(), dto.getNovaSenha());
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {

@@ -9,6 +9,6 @@ public class WebSecurityMvcConfig implements WebMvcConfigurer {
     private final LoginRateLimitInterceptor loginRateLimitInterceptor;
     @Override public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginRateLimitInterceptor)
-                .addPathPatterns("/v1/auth/login");
+                .addPathPatterns("/v1/auth/login", "/v1/auth/esqueci-senha", "/v1/auth/redefinir-senha");
     }
 }

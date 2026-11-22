@@ -1,6 +1,7 @@
 spring:
   application:
     name: mindu
+
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mindu}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
@@ -10,6 +11,7 @@ spring:
       minimum-idle: 1
       max-lifetime: 300000
       connection-timeout: 30000
+
   jpa:
     database: POSTGRESQL
     hibernate:
@@ -20,6 +22,22 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
+
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
 
 mindu:
   login:
