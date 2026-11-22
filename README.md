@@ -44,6 +44,8 @@ A API ficará em `http://localhost:8080/`. O banco usa o volume `mindu_local_pgd
 | `MILA_BUILD_CONTEXT` | Não | Caminho para o clone da Mila, necessário ao ativar o profile `mila`. |
 | `MILA_ENV_FILE` | Não | Caminho do arquivo de ambiente da Mila, necessário ao ativar o profile `mila`. |
 | `GROQ_API_KEY` | Não | Chave usada pela Mila quando sua configuração exigir Groq. Deve ficar somente no ambiente local. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | Para enviar e-mail | Credenciais SMTP já configuradas para a Brevo. Mantenha os valores reais apenas no `.env` local ou no ambiente do serviço. |
+| `MINDU_RESET_PASSWORD_URL` | Para montar o link | URL da página do front que receberá o token como `?token=...`; localmente, use a rota de redefinição disponibilizada pelo front. |
 
 ### Ativar a Mila (opcional)
 
@@ -97,6 +99,42 @@ O JWT expira em uma hora e não há refresh token. O front React deve tratar 401
 
 O login permite por padrão 10 tentativas por minuto por IP. Ao exceder o limite, a API responde 429 e inclui o header `Retry-After`. Para alterar o limite, configure `mindu.login.limite-por-minuto`; no Compose local, use a variável `MINDU_LOGIN_LIMITE_POR_MINUTO` no `.env` (por exemplo, `MINDU_LOGIN_LIMITE_POR_MINUTO=20`) e recrie a API.
 
+### Recuperação de senha
+
+O processo usa dois endpoints públicos. Primeiro, envie `POST /v1/auth/esqueci-senha` com `{"email":"usuario@email.com"}`. A API sempre responde `200` com a mesma mensagem, mesmo se o e-mail não existir. Para uma conta ativa, cria um token aleatório de uso único, guarda somente o hash no banco e envia o link para o endereço cadastrado. O link expira em 15 minutos.
+
+```json
+{"mensagem":"Se o e-mail estiver cadastrado, enviaremos um link para redefinir sua senha."}
+```
+
+O link usa `MINDU_RESET_PASSWORD_URL` como endereço da página do front e acrescenta `?token=...`. O envio acontece de forma assíncrona, após o token ser gravado, para que a chamada HTTP não dependa da latência SMTP. Mesmo se a Brevo falhar, a resposta continua genérica; a falha fica no log do servidor e o token não entregue é invalidado. A tela React ou Android que abrir esse link deve ler o token e enviar a senha nova para `POST /v1/auth/redefinir-senha`:
+
+```json
+{"token":"token-recebido-no-link","novaSenha":"NovaSenha123!"}
+```
+
+O sucesso retorna `204 No Content`; token inválido, expirado ou já utilizado retorna `400` JSON. A senha nova segue a regra existente de no mínimo 8 caracteres. O consumo do token e a alteração da senha são transacionais; a API invalida os outros links pendentes e incrementa a versão do usuário, encerrando sessões JWT anteriores. A limitação atual de 10 requisições por minuto por IP também protege os dois endpoints de recuperação.
+
+Para testar localmente, mantenha no `.env` as credenciais SMTP da Brevo já configuradas (em um clone novo, copie os nomes do `.env.example` e preencha os valores SMTP), confirme que `SMTP_FROM` é um remetente autorizado e que `MINDU_RESET_PASSWORD_URL` aponta para a página de redefinição usada pelo front. Suba a API com o Compose local e solicite o e-mail para uma caixa de teste que você controla:
+
+```bash
+curl -i -X POST http://localhost:8080/v1/auth/esqueci-senha \
+  -H "Content-Type: application/json" \
+  -d '{"email":"SEU_EMAIL_DE_TESTE"}'
+```
+
+Abra o link recebido, copie o token e envie a nova senha (o front fará a mesma chamada):
+
+```bash
+curl -i -X POST http://localhost:8080/v1/auth/redefinir-senha \
+  -H "Content-Type: application/json" \
+  -d '{"token":"TOKEN_RECEBIDO_NO_EMAIL","novaSenha":"NovaSenha123!"}'
+```
+
+O resultado esperado é `204 No Content`. Depois, confirme que a nova senha permite login e que um token JWT anterior já não autentica. Os testes automatizados usam mock e não enviam e-mails reais. Não compartilhe o link/token: qualquer pessoa que o possua pode redefinir a senha até seu uso ou expiração.
+
+**Limitação de hospedagem:** o plano gratuito do Render bloqueia tráfego SMTP de saída nas portas 25, 465 e 587. Portanto, o SMTP da Brevo pode ser testado localmente, mas o envio não funcionará no serviço gratuito atual sem uma hospedagem que permita SMTP. [Limitações de rede do Render Free](https://render.com/docs/free).
+
 ## Planos, dashboard e solicitação de exclusão
 
 `GET /v1/planos` retorna os limites de matrículas, o preço mensal por colaborador e `consultasSemLimite: true` em todos os ambientes. Os preços-base configurados são R$ 129 (Start), R$ 109 (Essencial) e R$ 89 (Corporativo). São valores fictícios para o projeto. A API não aplica cobrança nem bloqueia agendamentos por quantidade de consultas.
@@ -107,7 +145,7 @@ O cadastro profissional exige uma carteirinha PNG ou JPEG/JPG de até 5 MB. Apó
 
 O dashboard da empresa inclui o preço por colaborador, a estimativa mensal considerando o limite de vagas do plano, início/fim de vigência e dia de pagamento. Essa estimativa pressupõe contratação de todas as vagas do plano. Um administrador configura esses dados com `PATCH /v1/admin/empresas/{id}/contrato`, enviando `inicioVigencia`, `fimVigencia` (opcional) e `diaPagamento` (de 1 a 28).
 
-Uma conta autenticada pode abrir uma solicitação com `POST /v1/conta/solicitacao-exclusao`. A conta é desativada imediatamente e a solicitação fica registrada para análise em `GET /v1/admin/solicitacoes-exclusao`; o administrador atualiza seu status em `PATCH /v1/admin/solicitacoes-exclusao/{id}`. A API não apaga automaticamente dados relacionados; a exclusão definitiva após análise ainda é um procedimento administrativo. A recuperação “esqueci minha senha” ainda não está disponível.
+Uma conta autenticada pode abrir uma solicitação com `POST /v1/conta/solicitacao-exclusao`. A conta é desativada imediatamente e a solicitação fica registrada para análise em `GET /v1/admin/solicitacoes-exclusao`; o administrador atualiza seu status em `PATCH /v1/admin/solicitacoes-exclusao/{id}`. A API não apaga automaticamente dados relacionados; a exclusão definitiva após análise ainda é um procedimento administrativo.
 
 ## Testes e modelagem
 

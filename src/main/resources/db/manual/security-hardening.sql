@@ -48,3 +48,14 @@ CREATE TABLE IF NOT EXISTS solicitacao_exclusao_conta (
     solicitada_em TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     status VARCHAR(255) NOT NULL
 );
+CREATE TABLE IF NOT EXISTS token_recuperacao_senha (
+    id VARCHAR(36) PRIMARY KEY,
+    usuario_id VARCHAR(255) NOT NULL REFERENCES usuario(id),
+    hash_token VARCHAR(64) NOT NULL,
+    criado_em TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    expira_em TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    utilizado_em TIMESTAMP WITHOUT TIME ZONE,
+    invalidado_em TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT uk_token_recuperacao_hash UNIQUE (hash_token)
+);
+CREATE INDEX IF NOT EXISTS idx_token_recuperacao_usuario ON token_recuperacao_senha(usuario_id);

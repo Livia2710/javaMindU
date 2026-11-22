@@ -46,6 +46,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v1/auth/login",
+                                "/v1/auth/esqueci-senha",
+                                "/v1/auth/redefinir-senha",
                                 "/v1/planos",
                                 "/error",
                                 "/v1/empresas/validar-matricula"
