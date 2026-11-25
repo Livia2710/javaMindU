@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -28,6 +30,7 @@ public class GlobalExceptionHandler {
 
     private static final Pattern UNIQUE_CONSTRAINT = Pattern.compile("unique constraint [\\\"']([^\\\"']+)[\\\"']", Pattern.CASE_INSENSITIVE);
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final JsonMapper JSON = JsonMapper.builder().build();
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> erroDeStatus(ResponseStatusException ex) {
@@ -113,11 +116,34 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RestClientResponseException.class)
     public ResponseEntity<Map<String, Object>> erroDaMila(RestClientResponseException ex) {
         var statusMila = ex.getStatusCode();
-        var status = (statusMila.is4xxClientError()
-                && statusMila.value() != HttpStatus.UNAUTHORIZED.value()
-                && statusMila.value() != HttpStatus.FORBIDDEN.value())
-                ? statusMila : HttpStatus.BAD_GATEWAY;
-        return RespostaErro.resposta(status, "A Mila não conseguiu processar a solicitação.");
+        logMilaFailure(ex);
+        if (statusMila.value() == HttpStatus.UNPROCESSABLE_ENTITY.value()) {
+            return RespostaErro.resposta(HttpStatus.BAD_GATEWAY,
+                    "A Mila não conseguiu validar a solicitação. Tente reformular a mensagem.");
+        }
+        return RespostaErro.resposta(HttpStatus.BAD_GATEWAY,
+                "A Mila não conseguiu processar a solicitação. Tente novamente em instantes.");
+    }
+
+    private void logMilaFailure(RestClientResponseException ex) {
+        int status = ex.getStatusCode().value();
+        try {
+            JsonNode detail = JSON.readTree(ex.getResponseBodyAsString()).path("detail");
+            if (detail.isArray()) {
+                for (JsonNode item : detail) {
+                    String field = item.path("loc").isArray()
+                            ? java.util.stream.StreamSupport.stream(item.path("loc").spliterator(), false)
+                                    .map(JsonNode::asString).collect(java.util.stream.Collectors.joining("."))
+                            : "unknown";
+                    log.warn("Mila returned HTTP {} validation field={} type={} message={}", status, field,
+                            item.path("type").asString("unknown"), item.path("msg").asString("invalid"));
+                }
+                return;
+            }
+        } catch (RuntimeException ignored) {
+            // Response body may contain data; never log it verbatim.
+        }
+        log.warn("Mila returned HTTP {} with a non-structured error", status);
     }
 
     @ExceptionHandler(Exception.class)

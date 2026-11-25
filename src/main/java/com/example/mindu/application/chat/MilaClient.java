@@ -1,12 +1,13 @@
 package com.example.mindu.application.chat;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -14,13 +15,13 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class MilaClient {
+    private static final JsonMapper JSON = JsonMapper.builder().build();
     private final RestClient client;
     private final String apiKey;
 
@@ -29,8 +30,8 @@ public class MilaClient {
             @Value("${mindu.mila.api-key:}") String apiKey,
             @Value("${mindu.mila.timeout-seconds:60}") long timeoutSeconds
     ) {
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(
-                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(timeoutSeconds)).build());
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(timeoutSeconds));
         requestFactory.setReadTimeout(Duration.ofSeconds(timeoutSeconds));
         this.client = RestClient.builder().baseUrl(baseUrl).requestFactory(requestFactory).build();
         this.apiKey = apiKey;
@@ -40,10 +41,11 @@ public class MilaClient {
         List<Map<String, String>> history = request.history() == null ? List.of() : request.history().stream()
                 .map(turn -> Map.of("role", turn.role(), "content", turn.content()))
                 .toList();
+        Map<String, Object> payload = Map.of("message", request.message(), "history", history);
         return client.post().uri("/chat")
                 .headers(this::addAuth)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("message", request.message(), "history", history))
+                .body(JSON.writeValueAsBytes(payload))
                 .retrieve().body(JsonNode.class);
     }
 
@@ -67,4 +69,5 @@ public class MilaClient {
     private void addAuth(HttpHeaders headers) {
         if (apiKey != null && !apiKey.isBlank()) headers.set("X-Mila-API-Key", apiKey);
     }
+
 }
